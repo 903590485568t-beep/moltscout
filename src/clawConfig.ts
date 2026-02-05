@@ -5,7 +5,7 @@
 export const CLAW_SCOUT_CONFIG = {
   // Set this to the real CA once launched, e.g., "7Ey..."
   // If empty, the app will continue to "Hunt" for tokens named "ClawSeek" or "$ClawSeek"
-  officialMintAddress: "", 
+  officialMintAddress: '7Xrv9HZGp8YQQnxgwDhu9sKpYEQLa6x7FBHXyEWKpump', 
   
   // Backup identifiers if CA is not yet known
   targetNames: ["ClawSeek", "$ClawSeek", "Claw Seek"],
