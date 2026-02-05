@@ -83,6 +83,54 @@ export const usePumpPortal = (searchTerm: string = '') => {
   // Helper to check keywords
   const hasKeyword = useCallback((text: string, keywords: string[]) => keywords.some(k => text.includes(k)), []);
 
+  const classifyToken = useCallback((name: string, symbol: string) => {
+    const targetGroupIds = ['recent'];
+    const n = name.toLowerCase();
+    const s = symbol.toLowerCase();
+
+    // CLAW / SEA
+    if (hasKeyword(n, ['crab', 'lobster', 'claw', 'shrimp', 'sea', 'ocean', 'fish', 'whale', 'shark', 'coral', 'beach', 'shell'])) {
+      targetGroupIds.push('claw-meta');
+    } 
+    
+    // AI
+    if (hasKeyword(n, ['bot', 'ai', 'gpt', 'agent', 'brain', 'neural', 'compute', 'data', 'algo', 'robot']) || s.includes('ai')) {
+      targetGroupIds.push('ai-meta');
+    } 
+    
+    // POLITIFI
+    if (hasKeyword(n, ['trump', 'boden', 'maga', 'usa', 'biden', 'kamala', 'obama', 'putin', 'politics', 'vote', 'republic', 'democrat'])) {
+      targetGroupIds.push('politifi');
+    } 
+    
+    // CATS
+    if (hasKeyword(n, ['cat', 'mew', 'kitty', 'kitten', 'meow', 'purr', 'feline', 'neko', 'gato'])) {
+      targetGroupIds.push('cats');
+    } 
+    
+    // DOGS
+    if (hasKeyword(n, ['dog', 'pup', 'shib', 'inu', 'bark', 'woof', 'canine', 'bonk', 'floki', 'doge'])) {
+      targetGroupIds.push('dog-meta');
+    } 
+    
+    // FROGS
+    if (hasKeyword(n, ['pepe', 'frog', 'toad', 'apu', 'croak', 'pond', 'amphibian', 'kek'])) {
+      targetGroupIds.push('frog-meta');
+    } 
+    
+    // GAMING
+    if (hasKeyword(n, ['game', 'play', 'bit', 'pixel', 'retro', 'arcade', 'win', 'bet', 'casino', 'quest', 'level', 'npc'])) {
+      targetGroupIds.push('gaming');
+    } 
+    
+    // FOOD
+    if (hasKeyword(n, ['food', 'eat', 'drink', 'beer', 'pizza', 'burger', 'taco', 'coffee', 'tea', 'snack', 'cake', 'sweet', 'fruit'])) {
+      targetGroupIds.push('food');
+    }
+
+    return targetGroupIds;
+  }, [hasKeyword]);
+
   const handleTrade = useCallback((data: PumpPortalTrade) => {
     tradeBuffer.current.push(data);
   }, []);
@@ -184,6 +232,76 @@ export const usePumpPortal = (searchTerm: string = '') => {
     return () => clearInterval(interval);
   }, []);
 
+  // Fetch initial data from Pump.fun API to populate the dashboard immediately
+  useEffect(() => {
+    const fetchInitialData = async () => {
+        try {
+            const proxyUrl = 'https://corsproxy.io/?';
+            const targetUrl = 'https://frontend-api.pump.fun/coins?offset=0&limit=50&sort=created_timestamp&order=DESC&include_nsfw=true';
+            
+            const res = await fetch(proxyUrl + encodeURIComponent(targetUrl));
+            if (!res.ok) throw new Error('Failed to fetch initial data');
+            
+            const data = await res.json();
+            
+            if (!Array.isArray(data)) return;
+
+            setGroups(prevGroups => {
+                const newGroups = [...prevGroups];
+                
+                data.forEach((item: any) => {
+                    if (processedMints.current.has(item.mint)) return;
+                    processedMints.current.add(item.mint);
+
+                    const token: Token = {
+                        id: item.mint,
+                        name: item.name,
+                        symbol: item.symbol,
+                        price: (item.usd_market_cap || 0) / 1000000000, // Approximate based on MC
+                        marketCap: item.usd_market_cap || 0,
+                        volume24h: item.total_volume || 0,
+                        change24h: 0,
+                        imageUrl: getIpfsUrl(item.image_uri),
+                        description: item.description || '',
+                        created: item.created_timestamp,
+                        vSolInBondingCurve: item.virtual_sol_reserves || 0,
+                        bondingCurve: item.complete ? 100 : (item.bonding_curve_progress || 0) * 100
+                    };
+
+                    // Check for ClawScout
+                    const isClawScout = token.name.toLowerCase().includes('clawscout') || token.symbol.toLowerCase().includes('clawscout');
+                    if (isClawScout) {
+                        setClawToken(prev => prev || token);
+                    }
+
+                    // Classify
+                    const targetGroupIds = classifyToken(token.name, token.symbol);
+                    
+                    // Add to groups
+                    targetGroupIds.forEach(groupId => {
+                        const group = newGroups.find(g => g.id === groupId);
+                        if (group) {
+                            // Avoid duplicates in group
+                            if (!group.tokens.some(t => t.id === token.id)) {
+                                group.tokens.unshift(token);
+                                // Limit group size
+                                if (group.tokens.length > 50) group.tokens.pop();
+                            }
+                        }
+                    });
+                });
+
+                return newGroups;
+            });
+
+        } catch (e) {
+            console.error("Failed to fetch initial tokens", e);
+        }
+    };
+
+    fetchInitialData();
+  }, [classifyToken]);
+
   const handleNewToken = useCallback(async (data: PumpPortalToken) => {
     if (processedMints.current.has(data.mint)) return;
     processedMints.current.add(data.mint);
@@ -204,48 +322,7 @@ export const usePumpPortal = (searchTerm: string = '') => {
     // Check if this is THE ClawScout token (Priority Detection)
     const isClawScout = name.includes('clawscout') || symbol.includes('clawscout') || name === 'clawscout' || symbol === 'clawscout';
 
-    // Always add to 'recent' group
-    let targetGroupIds = ['recent'];
-    
-    // CLAW / SEA
-    if (hasKeyword(name, ['crab', 'lobster', 'claw', 'shrimp', 'sea', 'ocean', 'fish', 'whale', 'shark', 'coral', 'beach', 'shell'])) {
-      targetGroupIds.push('claw-meta');
-    } 
-    
-    // AI
-    if (hasKeyword(name, ['bot', 'ai', 'gpt', 'agent', 'brain', 'neural', 'compute', 'data', 'algo', 'robot']) || symbol.includes('ai')) {
-      targetGroupIds.push('ai-meta');
-    } 
-    
-    // POLITIFI
-    if (hasKeyword(name, ['trump', 'boden', 'maga', 'usa', 'biden', 'kamala', 'obama', 'putin', 'politics', 'vote', 'republic', 'democrat'])) {
-      targetGroupIds.push('politifi');
-    } 
-    
-    // CATS
-    if (hasKeyword(name, ['cat', 'mew', 'kitty', 'kitten', 'meow', 'purr', 'feline', 'neko', 'gato'])) {
-      targetGroupIds.push('cats');
-    }
-    
-    // DOGS
-    if (hasKeyword(name, ['dog', 'pup', 'shib', 'inu', 'bark', 'woof', 'canine', 'bonk', 'floki', 'doge'])) {
-      targetGroupIds.push('dog-meta');
-    }
-    
-    // FROGS
-    if (hasKeyword(name, ['pepe', 'frog', 'toad', 'apu', 'croak', 'pond', 'amphibian', 'kek'])) {
-      targetGroupIds.push('frog-meta');
-    }
-    
-    // GAMING
-    if (hasKeyword(name, ['game', 'play', 'bit', 'pixel', 'retro', 'arcade', 'win', 'bet', 'casino', 'quest', 'level', 'npc'])) {
-      targetGroupIds.push('gaming');
-    }
-    
-    // FOOD
-    if (hasKeyword(name, ['food', 'eat', 'drink', 'beer', 'pizza', 'burger', 'taco', 'coffee', 'tea', 'snack', 'cake', 'sweet', 'fruit'])) {
-      targetGroupIds.push('food');
-    }
+    const targetGroupIds = classifyToken(name, symbol);
 
     // 2. Resolve Metadata & Preload Image
     let resolvedImageUrl = `https://api.dicebear.com/7.x/identicon/svg?seed=${data.mint}`; // Default fallback
