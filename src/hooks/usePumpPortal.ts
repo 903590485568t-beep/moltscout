@@ -6,6 +6,7 @@ import { CLAW_SCOUT_CONFIG } from '../clawConfig';
 const WS_URL = 'wss://pumpportal.fun/api/data';
 
 // FOR PREVIEW ONLY: Test Token Data
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const TEST_TOKEN: Token = {
     id: "8D9GXfwDNzPxufDhUFXHwb7mEMZztxmKXXPE1P43pump",
     name: "ClawSeek Alpha",

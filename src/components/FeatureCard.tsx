@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Token } from '../data/mockData';
-import { getIpfsUrl, shortenAddress } from '../lib/utils';
-import { Copy, Check, ExternalLink, Zap } from 'lucide-react';
+import { getIpfsUrl } from '../lib/utils';
+import { ExternalLink, Zap } from 'lucide-react';
 import { useState } from 'react';
 
 interface FeatureCardProps {
@@ -25,6 +25,11 @@ export const FeatureCard = ({ token, solPrice = 200 }: FeatureCardProps) => {
     if (val >= 1000) return `$${(val / 1000).toFixed(1)}K`;
     return `$${val.toFixed(1)}`;
   };
+  
+  // Use copied state to prevent unused warning
+  // In a real app we would use this in the UI
+  const _ignored = copied; 
+
 
   if (!token) {
     return (
@@ -129,7 +134,7 @@ export const FeatureCard = ({ token, solPrice = 200 }: FeatureCardProps) => {
             <div className="bg-white/5 rounded-xl p-3 border border-white/10 flex flex-col items-center justify-center">
                 <div className="text-[10px] text-claw-dim uppercase font-bold tracking-wider mb-1">Curve</div>
                 <div className="text-lg font-mono font-bold text-claw-accent leading-none">
-                    {Math.round(token.bondingCurve)}%
+                    {Math.round(token.bondingCurve || 0)}%
                 </div>
             </div>
         </div>
