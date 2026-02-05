@@ -28,18 +28,18 @@ export const TrendSection = ({ group, solPrice }: TrendSectionProps) => {
   }
 
   return (
-    <div className="flex h-full flex-col rounded-xl border border-claw-dim/10 bg-claw-panel/20 p-4">
+    <div className="flex h-full flex-col rounded-xl border border-claw-dim/10 bg-claw-panel/40 p-4 shadow-[0_0_30px_rgba(0,0,0,0.3)] backdrop-blur-sm hover:shadow-[0_0_30px_rgba(139,92,246,0.15)] transition-shadow duration-500">
       <motion.div 
         initial={{ opacity: 0, x: -20 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
         className="mb-4 flex items-center gap-3 border-b border-claw-dim/10 pb-3"
       >
-        <div className="rounded-full bg-claw-panel p-2 ring-1 ring-claw-dim/20">
+        <div className="rounded-full bg-claw-panel p-2 ring-1 ring-claw-dim/20 shadow-[0_0_15px_rgba(139,92,246,0.2)]">
           {getIcon(group.id)}
         </div>
         <div className="min-w-0 flex-1">
-          <h2 className="truncate font-display text-lg font-bold text-white">
+          <h2 className="truncate font-display text-lg font-bold text-white text-glow">
             {group.name}
           </h2>
           <p className="truncate text-xs text-claw-dim">{group.description}</p>

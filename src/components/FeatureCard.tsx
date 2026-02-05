@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Token } from '../data/mockData';
-import { getIpfsUrl } from '../lib/utils';
-import { Copy, Check } from 'lucide-react';
+import { getIpfsUrl, shortenAddress } from '../lib/utils';
+import { Copy, Check, ExternalLink, Zap } from 'lucide-react';
 import { useState } from 'react';
 
 interface FeatureCardProps {
@@ -31,24 +31,28 @@ export const FeatureCard = ({ token, solPrice = 200 }: FeatureCardProps) => {
       <motion.div 
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="relative w-[320px] h-[160px] rounded-2xl overflow-hidden border border-claw-primary/30 bg-claw-panel/80 shadow-[0_0_30px_rgba(0,255,163,0.1)] backdrop-blur-sm flex items-center justify-center group"
+        className="relative w-full max-w-[420px] h-[200px] rounded-3xl overflow-hidden border-2 border-claw-primary/50 bg-claw-panel/90 shadow-[0_0_40px_rgba(139,92,246,0.2)] backdrop-blur-md flex items-center justify-center group"
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-claw-primary/5 to-transparent opacity-50" />
-        <div className="flex flex-col items-center gap-3 text-center p-6 relative z-10">
-          <div className="h-12 w-12 rounded-full bg-claw-primary/10 flex items-center justify-center border border-claw-primary/20 animate-pulse">
-            <span className="text-2xl">🦀</span>
+        <div className="absolute inset-0 bg-gradient-to-br from-claw-primary/10 via-transparent to-claw-accent/5 opacity-60" />
+        
+        {/* Animated Border Gradient */}
+        <div className="absolute inset-0 p-[2px] rounded-3xl bg-gradient-to-r from-claw-primary/50 via-claw-accent/50 to-claw-primary/50 opacity-50 animate-pulse mask-image-content" />
+
+        <div className="flex flex-col items-center gap-4 text-center p-8 relative z-10">
+          <div className="h-16 w-16 rounded-full bg-claw-primary/20 flex items-center justify-center border-2 border-claw-primary/40 shadow-[0_0_20px_rgba(139,92,246,0.3)] animate-pulse">
+            <span className="text-3xl">🎯</span>
           </div>
           <div>
-            <h3 className="text-lg font-bold text-white mb-1">Coming Soon</h3>
-            <p className="text-xs text-claw-dim font-mono">
-              Waiting for $ClawScout launch...
+            <h3 className="text-2xl font-black text-white mb-2 tracking-wide uppercase">Hunting...</h3>
+            <p className="text-sm text-claw-dim font-medium">
+              Awaiting <span className="text-claw-primary font-bold">$ClawSeek</span> Launch
             </p>
           </div>
         </div>
         
         {/* Scanning effect */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 left-[-100%] w-[50%] h-full bg-gradient-to-r from-transparent via-claw-primary/10 to-transparent transform skew-x-12 animate-shine" />
+          <div className="absolute top-0 left-[-100%] w-[50%] h-full bg-gradient-to-r from-transparent via-claw-primary/20 to-transparent transform skew-x-12 animate-shine" />
         </div>
       </motion.div>
     );
@@ -56,97 +60,107 @@ export const FeatureCard = ({ token, solPrice = 200 }: FeatureCardProps) => {
 
   return (
     <motion.div 
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      className="relative w-[380px] rounded-2xl overflow-hidden border-2 border-claw-primary bg-[#0A0C10] shadow-[0_0_50px_rgba(0,255,163,0.2)]"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="relative w-full max-w-[450px] group"
     >
-      {/* Glow Effect */}
-      <div className="absolute -top-20 -right-20 w-40 h-40 bg-claw-primary/20 rounded-full blur-[50px]" />
+      {/* 1. Crawling Gradient Layer (The "Border") */}
+      <div className="absolute -inset-[4px] rounded-3xl overflow-hidden z-0">
+         <div className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] bg-[conic-gradient(from_0deg,transparent_0_340deg,#8b5cf6_360deg)] animate-spin-slow opacity-100" />
+      </div>
+
+      {/* 2. Glow Layer */}
+      <div className="absolute -inset-[2px] rounded-3xl bg-claw-primary/30 blur-xl z-0 animate-glow-pulse" />
+
+      {/* 3. Static Border Background (Hides the center of the gradient) */}
+      <div className="absolute inset-[2px] bg-[#08080A] rounded-[22px] z-0" />
+
+      {/* 3. Main Content Layer */}
+      <div className="relative z-10 p-6 rounded-[22px] bg-[#08080A]/90 backdrop-blur-xl h-full border border-white/5 shadow-[0_0_60px_rgba(139,92,246,0.2)]">
       
-      <div className="p-5 relative z-10">
-        <div className="flex items-start gap-4 mb-4">
-            <img 
-              src={getIpfsUrl(token.imageUrl)} 
-              alt={token.name}
-              className="w-20 h-20 rounded-xl object-cover border-2 border-white/10 shadow-lg"
-            />
-            <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-start">
-                    <div>
-                        <h3 className="text-xl font-black text-white leading-none mb-1">{token.name}</h3>
-                        <div className="flex flex-col gap-1">
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm font-bold text-claw-primary">${token.symbol}</span>
-                                <span className="px-1.5 py-0.5 rounded bg-claw-primary/20 text-claw-primary text-[10px] font-bold uppercase border border-claw-primary/30">
-                                    Official
-                                </span>
-                            </div>
-                            <span className="text-[10px] text-claw-dim font-mono tracking-tight">
-                                Native Platform Token
-                            </span>
-                        </div>
-                    </div>
-                    <div className="flex gap-1">
-                        {/* Old buttons removed */}
-                    </div>
-                </div>
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                    <div className="bg-white/5 rounded-lg p-2 border border-white/5">
-                        <div className="text-[10px] text-claw-dim uppercase font-bold">Market Cap</div>
-                        <div className="text-lg font-mono font-bold text-white leading-none mt-0.5">
-                            {formatUSD(token.marketCap)}
-                        </div>
-                    </div>
-                    <div className="bg-white/5 rounded-lg p-2 border border-white/5">
-                        <div className="text-[10px] text-claw-dim uppercase font-bold">Volume</div>
-                        <div className="text-lg font-mono font-bold text-claw-primary leading-none mt-0.5">
-                            {formatUSD(token.volume24h * solPrice)}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        {/* Bonding Curve Progress */}
-        <div className="space-y-1.5 mb-4">
-            <div className="flex justify-between text-[10px] uppercase font-bold tracking-wider">
-                <span className="text-claw-dim">Bonding Curve Progress</span>
-                <span className="text-white">{(token.vSolInBondingCurve ?? 0) > 0 ? 'Active' : 'Graduated'}</span>
-            </div>
-            <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
-                <motion.div 
-                    initial={{ width: 0 }}
-                    animate={{ width: `${token.bondingCurve ?? 0}%` }}
-                    className="h-full bg-gradient-to-r from-claw-primary to-emerald-400"
+      {/* Background Effects */}
+      <div className="absolute -top-32 -right-32 w-64 h-64 bg-claw-primary/30 rounded-full blur-[80px] opacity-60 pointer-events-none" />
+      <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-claw-accent/20 rounded-full blur-[80px] opacity-40 pointer-events-none" />
+      
+      {/* "OFFICIAL" Badge */}
+      <div className="absolute top-0 right-0 bg-gradient-to-bl from-claw-primary to-claw-primary/80 text-white text-[10px] font-black uppercase px-4 py-1.5 rounded-bl-xl shadow-lg z-20 tracking-wider">
+        Official Project Token
+      </div>
+
+        <div className="flex items-start gap-5 mb-5 relative z-10">
+            <div className="relative">
+                <img 
+                  src={getIpfsUrl(token.imageUrl)} 
+                  alt={token.name}
+                  className="w-24 h-24 rounded-2xl object-cover border-2 border-white/20 shadow-2xl"
                 />
+                <div className="absolute -bottom-2 -right-2 bg-claw-accent text-black p-1.5 rounded-full border-2 border-[#08080A]">
+                    <Zap size={14} strokeWidth={3} />
+                </div>
+            </div>
+            
+            <div className="flex-1 min-w-0 pt-1">
+                <h3 className="text-3xl font-black text-white leading-none mb-1 tracking-tight">{token.name}</h3>
+                <div className="flex items-center gap-2 mb-3">
+                    <span className="text-lg font-bold text-claw-primary">${token.symbol}</span>
+                    <span className="h-1.5 w-1.5 rounded-full bg-claw-accent animate-pulse" />
+                    <span className="text-xs text-claw-dim font-mono">Live on Solana</span>
+                </div>
+                <p className="text-xs text-gray-400 leading-relaxed line-clamp-2 font-medium">
+                   The native utility token of the ClawSeek ecosystem. Hold to unlock premium features and faster scanning speeds.
+                </p>
             </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex gap-2">
-             <a 
-                href={`https://pump.fun/${token.id}`}
-                target="_blank"
-                rel="noreferrer"
-                className="flex-1 bg-[#87CEEB] hover:bg-[#7ab8d4] text-black font-black uppercase text-sm h-12 rounded-xl flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg"
-            >
-                <img src="/pump-fun-logo.png" alt="" className="w-5 h-5 hidden" /> {/* Placeholder for logo if needed */}
-                💊 Pump.fun
-            </a>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-3 gap-2 mb-5 relative z-10">
+            <div className="bg-white/5 rounded-xl p-3 border border-white/10 flex flex-col items-center justify-center">
+                <div className="text-[10px] text-claw-dim uppercase font-bold tracking-wider mb-1">Market Cap</div>
+                <div className="text-lg font-mono font-bold text-white leading-none">
+                    {formatUSD(token.marketCap)}
+                </div>
+            </div>
+            <div className="bg-white/5 rounded-xl p-3 border border-white/10 flex flex-col items-center justify-center">
+                <div className="text-[10px] text-claw-dim uppercase font-bold tracking-wider mb-1">Volume 24h</div>
+                <div className="text-lg font-mono font-bold text-white leading-none">
+                    {formatUSD(token.volume24h * solPrice)}
+                </div>
+            </div>
+            <div className="bg-white/5 rounded-xl p-3 border border-white/10 flex flex-col items-center justify-center">
+                <div className="text-[10px] text-claw-dim uppercase font-bold tracking-wider mb-1">Curve</div>
+                <div className="text-lg font-mono font-bold text-claw-accent leading-none">
+                    {Math.round(token.bondingCurve)}%
+                </div>
+            </div>
+        </div>
+
+        {/* Actions */}
+        <div className="grid grid-cols-2 gap-3 relative z-10">
             <a 
-                href={`https://gmgn.ai/sol/token/${token.id}`}
-                target="_blank"
-                rel="noreferrer"
-                className="flex-1 bg-claw-primary hover:bg-claw-primary/90 text-black font-black uppercase text-sm h-12 rounded-xl flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_20px_rgba(0,255,163,0.3)]"
+              href={`https://pump.fun/${token.id}`}
+              target="_blank"
+              rel="noreferrer"
+              className="col-span-2 bg-gradient-to-r from-claw-primary to-violet-600 hover:from-violet-500 hover:to-violet-600 text-white font-black text-lg py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-claw-primary/25 hover:shadow-claw-primary/40 hover:-translate-y-0.5"
             >
-                ⚡ GMGN (Fast)
+              BUY ON PUMP.FUN
+              <ExternalLink size={18} strokeWidth={3} />
             </a>
-            <button 
-                onClick={copyToClipboard}
-                className="w-12 h-12 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-claw-dim hover:text-white transition-colors"
-                title="Copy Contract Address"
+            
+            <a 
+               href={`https://gmgn.ai/sol/token/${token.id}`}
+               target="_blank" 
+               rel="noreferrer"
+               className="bg-[#1A1D26] hover:bg-[#252A36] text-white font-bold text-sm py-3 rounded-xl flex items-center justify-center gap-2 border border-white/5 transition-colors"
             >
-                {copied ? <Check size={20} className="text-green-400" /> : <Copy size={20} />}
+               GMGN Chart
+            </a>
+
+            <button 
+              onClick={copyToClipboard}
+              className="bg-[#1A1D26] hover:bg-[#252A36] text-claw-dim hover:text-white font-mono text-xs py-3 rounded-xl flex items-center justify-center gap-2 border border-white/5 transition-all group"
+            >
+              {copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
+              <span className="truncate max-w-[100px]">{token.id.slice(0, 4)}...{token.id.slice(-4)}</span>
             </button>
         </div>
       </div>

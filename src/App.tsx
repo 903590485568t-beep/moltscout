@@ -15,28 +15,48 @@ function App() {
       
       {/* Ambient Background Effects */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-claw-primary/5 rounded-full blur-[120px] animate-pulse-slow" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-claw-accent/5 rounded-full blur-[120px] animate-pulse-slow" />
+        {/* Top Violet Gradient */}
+        <div className="absolute top-0 left-0 right-0 h-[50vh] bg-gradient-to-b from-claw-primary/20 via-claw-primary/5 to-transparent opacity-60" />
         
-        {/* Floating Bubbles */}
-        {[...Array(10)].map((_, i) => (
+        {/* Bottom Turquoise Fire Effect */}
+        <div className="absolute bottom-0 left-0 right-0 h-[40vh] bg-gradient-to-t from-claw-accent/15 via-claw-accent/5 to-transparent opacity-80" />
+        
+        {/* Dynamic Flickering Layer (Bottom) */}
+        <motion.div 
+            className="absolute bottom-0 left-0 right-0 h-[50vh] bg-gradient-to-t from-claw-accent/10 via-transparent to-transparent"
+            animate={{ 
+                opacity: [0.2, 0.5, 0.2],
+                scaleY: [1, 1.1, 1],
+            }}
+            transition={{ 
+                duration: 5, 
+                repeat: Infinity, 
+                ease: "easeInOut" 
+            }}
+            style={{ originY: 1 }}
+        />
+
+        {/* Floating Bubbles (Smoother) */}
+        {[...Array(15)].map((_, i) => (
            <motion.div
              key={i}
-             className="absolute rounded-full bg-white/5"
+             className="absolute rounded-full bg-white/5 blur-[1px]"
              style={{
-               width: Math.random() * 50 + 10,
-               height: Math.random() * 50 + 10,
+               width: Math.random() * 100 + 20, // Larger, softer bubbles
+               height: Math.random() * 100 + 20,
                left: `${Math.random() * 100}%`,
-               top: `${Math.random() * 100}%`,
+               top: `${Math.random() * 100 + 100}%`, // Start well below view
              }}
              animate={{
-               y: [0, -1000],
-               opacity: [0, 0.5, 0]
+               y: [0, -2500], // Float WAY up (off screen)
+               opacity: [0, 0.3, 0.3, 0], // Stay visible longer, fade only at very end
+               scale: [0.8, 1.2, 0.8] 
              }}
              transition={{
-               duration: Math.random() * 20 + 10,
+               duration: Math.random() * 40 + 30, // Even slower
                repeat: Infinity,
-               ease: "linear"
+               ease: "linear",
+               delay: Math.random() * 20 
              }}
            />
         ))}
@@ -54,17 +74,17 @@ function App() {
             className="flex flex-col lg:flex-row items-center justify-between gap-12"
           >
             <div className="text-center lg:text-left flex-1">
-                <h1 className="mb-4 font-display text-4xl font-black uppercase tracking-tight text-white sm:text-6xl md:text-7xl">
+                <h1 className="mb-4 font-display text-4xl font-black uppercase tracking-tight text-white sm:text-6xl md:text-7xl text-glow">
                 <span className="claw-gradient-text">Hunt</span> The Next<br />
                 <span className="text-white">Trend on Solana</span>
                 </h1>
-                <p className="mx-auto lg:mx-0 max-w-2xl text-lg text-claw-dim">
+                <p className="mx-auto lg:mx-0 max-w-2xl text-lg text-claw-dim text-glow-sm">
                 Real-time Pump.fun analysis. We find the alpha before anyone else.
                 Follow the claws.
                 </p>
             </div>
 
-            {/* Feature Card for $ClawScout */}
+            {/* Feature Card for $ClawSeek */}
             <div className="flex-shrink-0">
                 <FeatureCard token={clawToken} solPrice={solPrice} />
             </div>
@@ -96,7 +116,7 @@ function App() {
 
         {/* Footer */}
         <footer className="mt-20 border-t border-claw-dim/10 py-8 text-center text-sm text-claw-dim">
-          <p>© 2024 $ClawScout. Data provided by Pump.fun.</p>
+          <p>© 2024 $ClawSeek. Data provided by Pump.fun.</p>
         </footer>
       </main>
     </div>

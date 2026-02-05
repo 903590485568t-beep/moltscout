@@ -8,12 +8,12 @@ export default {
     extend: {
       colors: {
         claw: {
-          bg: '#0a0f1c',       // Very dark blue/black
-          panel: '#151e32',    // Slightly lighter panel
-          primary: '#ff3333',  // Bright lobster red
-          accent: '#ff8438',   // Orange claw accent
-          text: '#e2e8f0',     // Light slate text
-          dim: '#94a3b8',      // Dim text
+          bg: '#050505',       // Almost black
+          panel: '#0f0f11',    // Dark grey/black panel
+          primary: '#8b5cf6',  // Violet/Purple (The "Seek" color)
+          accent: '#06b6d4',   // Cyan (The "Found" color)
+          text: '#f8fafc',     // White/Slate-50
+          dim: '#64748b',      // Slate-500
         }
       },
       fontFamily: {
@@ -23,11 +23,17 @@ export default {
       animation: {
         'float': 'float 6s ease-in-out infinite',
         'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'spin-slow': 'spin 4s linear infinite', // Standard spin, just slower
+        'shine': 'shine 1.5s infinite',
+        'glow-pulse': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
       keyframes: {
         float: {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-20px)' },
+        },
+        shine: {
+          '100%': { left: '125%' },
         }
       }
     },

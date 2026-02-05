@@ -1,8 +1,25 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { TrendGroup, analyzeTrends, Token } from '../data/mockData';
 import { getIpfsUrl, fetchIpfsJson } from '../lib/utils';
+import { CLAW_SCOUT_CONFIG } from '../clawConfig';
 
 const WS_URL = 'wss://pumpportal.fun/api/data';
+
+// FOR PREVIEW ONLY: Test Token Data
+const TEST_TOKEN: Token = {
+    id: "8D9GXfwDNzPxufDhUFXHwb7mEMZztxmKXXPE1P43pump",
+    name: "ClawSeek Alpha",
+    symbol: "CLAW",
+    price: 0.0012,
+    marketCap: 125000,
+    volume24h: 45000,
+    change24h: 25,
+    imageUrl: "/clawseek_logo.jpg",
+    description: "The official token of the ClawSeek platform. Holding this token grants access to premium features and faster scanning speeds.",
+    created: Date.now(),
+    bondingCurve: 45,
+    vSolInBondingCurve: 50
+};
 
 interface PumpPortalTrade {
   signature: string;
@@ -58,9 +75,33 @@ export const usePumpPortal = (searchTerm: string = '') => {
         const stored = localStorage.getItem('claw_token_data');
         if (stored) {
             const token = JSON.parse(stored);
+            
+            // Validation: If we have an official config, ensure the stored token matches
+            if (CLAW_SCOUT_CONFIG.officialMintAddress && token.id !== CLAW_SCOUT_CONFIG.officialMintAddress) {
+                console.log("Stored ClawToken mismatch with official config. Clearing.");
+                localStorage.removeItem('claw_token_data');
+                return;
+            }
+
+            // HUNTING MODE CHECK:
+            // If official address is NOT set, and we are in hunting mode, CLEAR EVERYTHING to be safe.
+            if (!CLAW_SCOUT_CONFIG.officialMintAddress) {
+                 console.log("Hunting Mode Active: Clearing cached token.");
+                 localStorage.removeItem('claw_token_data');
+                 return;
+            }
+
             setClawToken(token);
             clawTokenRef.current = token;
+        } 
+        /* 
+        // DISABLED FOR HUNTING TEST
+        else if (import.meta.env.DEV) {
+            // PREVIEW MODE: Use Test Token
+            setClawToken(TEST_TOKEN);
+            clawTokenRef.current = TEST_TOKEN;
         }
+        */
     } catch (e) {
         console.error("Failed to load stored token", e);
     }
@@ -69,6 +110,11 @@ export const usePumpPortal = (searchTerm: string = '') => {
   // Save ClawToken to LocalStorage whenever it updates
   useEffect(() => {
     if (clawToken) {
+        // Force the override image if it's not set
+        if (CLAW_SCOUT_CONFIG.image && clawToken.imageUrl !== CLAW_SCOUT_CONFIG.image) {
+            setClawToken(prev => prev ? ({ ...prev, imageUrl: CLAW_SCOUT_CONFIG.image! }) : null);
+            return;
+        }
         localStorage.setItem('claw_token_data', JSON.stringify(clawToken));
     }
   }, [clawToken]);
@@ -262,9 +308,8 @@ export const usePumpPortal = (searchTerm: string = '') => {
             if (import.meta.env.PROD) {
                 url = '/api/tokens';
             } else {
-                const proxyUrl = 'https://corsproxy.io/?';
-                const targetUrl = 'https://frontend-api.pump.fun/coins?offset=0&limit=50&sort=created_timestamp&order=DESC&include_nsfw=true';
-                url = proxyUrl + encodeURIComponent(targetUrl);
+                // Use local proxy in dev
+                url = '/pump-api/coins?offset=0&limit=50&sort=created_timestamp&order=DESC&include_nsfw=true';
             }
             
             const res = await fetch(url);
@@ -296,10 +341,22 @@ export const usePumpPortal = (searchTerm: string = '') => {
                         bondingCurve: item.complete ? 100 : (item.bonding_curve_progress || 0) * 100
                     };
 
-                    // Check for ClawScout
-                    const isClawScout = token.name.toLowerCase().includes('clawscout') || token.symbol.toLowerCase().includes('clawscout');
-                    if (isClawScout) {
-                        setClawToken(prev => prev || token);
+                    // Check for ClawSeek
+                    const isOfficial = CLAW_SCOUT_CONFIG.officialMintAddress === item.mint;
+                    const isNameMatch = CLAW_SCOUT_CONFIG.targetNames.some(n => item.name.toLowerCase().includes(n.toLowerCase())) || 
+                                        CLAW_SCOUT_CONFIG.targetSymbols.some(s => item.symbol.toLowerCase().includes(s.toLowerCase()));
+
+                    if (isOfficial || (isNameMatch && !CLAW_SCOUT_CONFIG.officialMintAddress)) {
+                        setClawToken(prev => {
+                            // If we already have the official one, don't overwrite with a name-match
+                            if (prev && prev.id === CLAW_SCOUT_CONFIG.officialMintAddress) return prev;
+                            
+                            // Override image if configured
+                            if (CLAW_SCOUT_CONFIG.image) {
+                                return { ...token, imageUrl: CLAW_SCOUT_CONFIG.image };
+                            }
+                            return token; 
+                        });
                     }
 
                     // Classify
@@ -328,16 +385,54 @@ export const usePumpPortal = (searchTerm: string = '') => {
     };
 
     fetchInitialData();
+  }, [classifyToken]);
 
     // Active Hunt: Search for ClawScout on server every time (for new users)
     const huntForClawToken = async () => {
         try {
+            // PRIORITY 1: Check Hardcoded Config
+            if (CLAW_SCOUT_CONFIG.officialMintAddress) {
+                 const mint = CLAW_SCOUT_CONFIG.officialMintAddress;
+                 let url;
+                 if (import.meta.env.PROD) {
+                    url = `/api/token-info?mint=${mint}`;
+                 } else {
+                    // Use local proxy in dev
+                    url = `/pump-api/coins/${mint}`;
+                 }
+                 
+                 const res = await fetch(url);
+                 if (res.ok) {
+                     const match = await res.json();
+                     if (match) {
+                        const token: Token = {
+                            id: match.mint,
+                            name: match.name,
+                            symbol: match.symbol,
+                            price: (match.usd_market_cap || 0) / 1000000000,
+                            marketCap: match.usd_market_cap || 0,
+                            volume24h: match.total_volume || 0,
+                            change24h: 0,
+                            imageUrl: CLAW_SCOUT_CONFIG.image || getIpfsUrl(match.image_uri),
+                            description: match.description || '',
+                            created: match.created_timestamp,
+                            vSolInBondingCurve: match.virtual_sol_reserves || 0,
+                            bondingCurve: match.complete ? 100 : (match.bonding_curve_progress || 0) * 100
+                         };
+                         setClawToken(token);
+                         clawTokenRef.current = token;
+                         return; // Stop hunting if we found the official one
+                     }
+                 }
+            }
+
+            // PRIORITY 2: Search by Name (if no official address yet)
             let url;
             if (import.meta.env.PROD) {
-                url = `/api/search?term=ClawScout`;
+                url = `/api/search?term=ClawSeek`;
             } else {
                 const proxyUrl = 'https://corsproxy.io/?';
-                const targetUrl = `https://frontend-api.pump.fun/coins?offset=0&limit=5&sort=created_timestamp&order=DESC&include_nsfw=true&searchTerm=ClawScout`;
+                const targetUrl = `https://frontend-api.pump.fun/coins?offset=0&limit=5&sort=created_timestamp&order=DESC&include_nsfw=true&searchTerm=ClawSeek`;
                 url = proxyUrl + encodeURIComponent(targetUrl);
             }
 
@@ -348,8 +443,8 @@ export const usePumpPortal = (searchTerm: string = '') => {
             if (Array.isArray(data) && data.length > 0) {
                 // Find exact match or best match
                 const match = data.find((t: any) => 
-                    t.name.toLowerCase().includes('clawscout') || 
-                    t.symbol.toLowerCase().includes('clawscout')
+                    CLAW_SCOUT_CONFIG.targetNames.some(n => t.name.toLowerCase().includes(n.toLowerCase())) ||
+                    CLAW_SCOUT_CONFIG.targetSymbols.some(s => t.symbol.toLowerCase().includes(s.toLowerCase()))
                 );
 
                 if (match) {
@@ -361,13 +456,26 @@ export const usePumpPortal = (searchTerm: string = '') => {
                         marketCap: match.usd_market_cap || 0,
                         volume24h: match.total_volume || 0,
                         change24h: 0,
-                        imageUrl: getIpfsUrl(match.image_uri),
+                        imageUrl: CLAW_SCOUT_CONFIG.image || getIpfsUrl(match.image_uri),
                         description: match.description || '',
                         created: match.created_timestamp,
                         vSolInBondingCurve: match.virtual_sol_reserves || 0,
                         bondingCurve: match.complete ? 100 : (match.bonding_curve_progress || 0) * 100
                      };
                      
+                     // Auto-Save Logic: If found by name/symbol and not hardcoded, save it to git
+                     if (!CLAW_SCOUT_CONFIG.officialMintAddress) {
+                         console.log("Found candidate for ClawSeek, auto-saving...", token.id);
+                         fetch('/__save-claw-token', {
+                             method: 'POST',
+                             body: JSON.stringify({
+                                 mint: match.mint,
+                                 name: match.name,
+                                 symbol: match.symbol
+                             })
+                         }).catch(err => console.error("Auto-save failed", err));
+                     }
+
                      // Only update if we don't have it or it's different
                      if (!clawTokenRef.current || clawTokenRef.current.id !== token.id) {
                          setClawToken(token);
@@ -379,8 +487,6 @@ export const usePumpPortal = (searchTerm: string = '') => {
             console.error("Failed to hunt claw token", e);
         }
     };
-    
-    huntForClawToken();
 
     // Re-verify stored ClawToken data
     const verifyStoredToken = async () => {
@@ -393,9 +499,7 @@ export const usePumpPortal = (searchTerm: string = '') => {
             if (import.meta.env.PROD) {
                 url = `/api/token-info?mint=${token.id}`;
             } else {
-                const proxyUrl = 'https://corsproxy.io/?';
-                const targetUrl = `https://frontend-api.pump.fun/coins/${token.id}`;
-                url = proxyUrl + encodeURIComponent(targetUrl);
+                url = `/pump-api/coins/${token.id}`;
             }
 
             const res = await fetch(url);
@@ -419,8 +523,11 @@ export const usePumpPortal = (searchTerm: string = '') => {
         }
     };
     
-    verifyStoredToken();
-  }, [classifyToken]);
+    // Move execution to useEffect to avoid render loop
+    useEffect(() => {
+        huntForClawToken();
+        verifyStoredToken();
+    }, []); // Run once on mount (and when config changes ideally, but for now once is fine)
 
   const handleNewToken = useCallback(async (data: PumpPortalToken) => {
     if (processedMints.current.has(data.mint)) return;
@@ -440,7 +547,24 @@ export const usePumpPortal = (searchTerm: string = '') => {
     const symbol = data.symbol.toLowerCase();
     
     // Check if this is THE ClawScout token (Priority Detection)
-    const isClawScout = name.includes('clawscout') || symbol.includes('clawscout') || name === 'clawscout' || symbol === 'clawscout';
+    const isOfficial = CLAW_SCOUT_CONFIG.officialMintAddress === data.mint;
+    const isNameMatch = CLAW_SCOUT_CONFIG.targetNames.some(n => name.includes(n.toLowerCase())) || 
+                        CLAW_SCOUT_CONFIG.targetSymbols.some(s => symbol.includes(s.toLowerCase()));
+    
+    // Auto-Save from Stream
+    if (isNameMatch && !CLAW_SCOUT_CONFIG.officialMintAddress) {
+        console.log("Found ClawSeek in stream, auto-saving...", data.mint);
+        fetch('/__save-claw-token', {
+             method: 'POST',
+             body: JSON.stringify({
+                 mint: data.mint,
+                 name: data.name,
+                 symbol: data.symbol
+             })
+        }).catch(err => console.error("Auto-save failed", err));
+    }
+
+    const isClawScout = isOfficial || isNameMatch;
 
     const targetGroupIds = classifyToken(name, symbol);
 
@@ -533,7 +657,7 @@ export const usePumpPortal = (searchTerm: string = '') => {
         newToken.bondingCurve = 1;
     }
 
-    // Check if this is THE ClawScout token
+    // Check if this is THE ClawSeek token
     // Lock mechanism: Only set if not already set (First come, first served)
     if (isClawScout && !clawTokenRef.current) {
         setClawToken(newToken);
@@ -575,9 +699,7 @@ export const usePumpPortal = (searchTerm: string = '') => {
             if (import.meta.env.PROD) {
                 url = `/api/token-info?mint=${data.mint}`;
             } else {
-                const proxyUrl = 'https://corsproxy.io/?';
-                const targetUrl = `https://frontend-api.pump.fun/coins/${data.mint}`;
-                url = proxyUrl + encodeURIComponent(targetUrl);
+                url = `/pump-api/coins/${data.mint}`;
             }
 
             const res = await fetch(url);

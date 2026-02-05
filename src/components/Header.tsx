@@ -24,7 +24,7 @@ export const Header = ({ stats, searchTerm, setSearchTerm }: HeaderProps) => {
           </motion.div>
           <div className="flex flex-col">
             <span className="font-display text-2xl font-black tracking-wider text-white leading-none">
-                $CLAW<span className="text-claw-primary">SCOUT</span>
+                $CLAW<span className="text-claw-primary">SEEK</span>
             </span>
             <span className="text-[10px] text-claw-dim tracking-widest uppercase">Solana Trend Hunter</span>
           </div>
@@ -55,7 +55,7 @@ export const Header = ({ stats, searchTerm, setSearchTerm }: HeaderProps) => {
 
         <div className="flex items-center gap-2 md:hidden">
             <a 
-                href="https://x.com/ClawScout_" 
+                href="https://x.com/ClawSeek_" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="flex items-center justify-center w-9 h-9 rounded-full bg-claw-panel text-white hover:bg-claw-dim/20 transition-colors border border-claw-dim/20"
@@ -71,7 +71,7 @@ export const Header = ({ stats, searchTerm, setSearchTerm }: HeaderProps) => {
 
         <div className="hidden md:flex items-center gap-4">
             <a 
-                href="https://x.com/ClawScout_" 
+                href="https://x.com/ClawSeek_" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="flex items-center justify-center w-10 h-10 rounded-full bg-claw-panel text-white hover:bg-claw-dim/20 transition-colors border border-claw-dim/20"
