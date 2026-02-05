@@ -329,6 +329,59 @@ export const usePumpPortal = (searchTerm: string = '') => {
 
     fetchInitialData();
 
+    // Active Hunt: Search for ClawScout on server every time (for new users)
+    const huntForClawToken = async () => {
+        try {
+            let url;
+            if (import.meta.env.PROD) {
+                url = `/api/search?term=ClawScout`;
+            } else {
+                const proxyUrl = 'https://corsproxy.io/?';
+                const targetUrl = `https://frontend-api.pump.fun/coins?offset=0&limit=5&sort=created_timestamp&order=DESC&include_nsfw=true&searchTerm=ClawScout`;
+                url = proxyUrl + encodeURIComponent(targetUrl);
+            }
+
+            const res = await fetch(url);
+            if (!res.ok) return;
+            const data = await res.json();
+            
+            if (Array.isArray(data) && data.length > 0) {
+                // Find exact match or best match
+                const match = data.find((t: any) => 
+                    t.name.toLowerCase().includes('clawscout') || 
+                    t.symbol.toLowerCase().includes('clawscout')
+                );
+
+                if (match) {
+                     const token: Token = {
+                        id: match.mint,
+                        name: match.name,
+                        symbol: match.symbol,
+                        price: (match.usd_market_cap || 0) / 1000000000,
+                        marketCap: match.usd_market_cap || 0,
+                        volume24h: match.total_volume || 0,
+                        change24h: 0,
+                        imageUrl: getIpfsUrl(match.image_uri),
+                        description: match.description || '',
+                        created: match.created_timestamp,
+                        vSolInBondingCurve: match.virtual_sol_reserves || 0,
+                        bondingCurve: match.complete ? 100 : (match.bonding_curve_progress || 0) * 100
+                     };
+                     
+                     // Only update if we don't have it or it's different
+                     if (!clawTokenRef.current || clawTokenRef.current.id !== token.id) {
+                         setClawToken(token);
+                         clawTokenRef.current = token;
+                     }
+                }
+            }
+        } catch (e) {
+            console.error("Failed to hunt claw token", e);
+        }
+    };
+    
+    huntForClawToken();
+
     // Re-verify stored ClawToken data
     const verifyStoredToken = async () => {
         const stored = localStorage.getItem('claw_token_data');
