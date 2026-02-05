@@ -379,6 +379,29 @@ export const usePumpPortal = (searchTerm: string = '') => {
             // PRIORITY 1: Check Hardcoded Config
             if (CLAW_SCOUT_CONFIG.officialMintAddress) {
                  const mint = CLAW_SCOUT_CONFIG.officialMintAddress;
+                 
+                 // 1. Create Skeleton Token immediately to replace "Hunting" screen
+                 const skeletonToken: Token = {
+                    id: mint,
+                    name: CLAW_SCOUT_CONFIG.targetNames[0] || "$ClawSeek",
+                    symbol: CLAW_SCOUT_CONFIG.targetSymbols[0] || "SEEK",
+                    price: 0,
+                    marketCap: 0,
+                    volume24h: 0,
+                    change24h: 0,
+                    imageUrl: CLAW_SCOUT_CONFIG.image || "",
+                    description: "Loading official token data...",
+                    created: Date.now(),
+                    vSolInBondingCurve: 0,
+                    bondingCurve: 0
+                 };
+
+                 // Set initial state if empty (shows card immediately)
+                 if (!clawTokenRef.current) {
+                     setClawToken(skeletonToken);
+                     clawTokenRef.current = skeletonToken;
+                 }
+
                  let url;
                  if (import.meta.env.PROD) {
                     url = `/api/token-info?mint=${mint}`;
