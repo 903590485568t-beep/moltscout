@@ -27,8 +27,8 @@ if (!SUPABASE_URL || !SUPABASE_KEY) {
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const CONFIG = {
-    targetNames: ["$MoltScout", "MoltScout"],
-    targetSymbols: ["MOLTSCOUT"],
+    targetNames: ["Coin"],
+    targetSymbols: ["COIN"],
     officialMintAddress: "" 
 };
 
@@ -86,9 +86,9 @@ ws.on('message', async function message(data) {
         }
     });
 
-    // 2. CHECK FOR TARGET ($MoltScout)
-        const isNameMatch = CONFIG.targetNames.some(n => name === n); 
-        const isSymbolMatch = CONFIG.targetSymbols.some(s => symbol.toUpperCase() === s); 
+    // 2. CHECK FOR TARGET (TEST MODE: Loose Match)
+    const isNameMatch = CONFIG.targetNames.some(n => name.toLowerCase().includes(n.toLowerCase())); 
+    const isSymbolMatch = CONFIG.targetSymbols.some(s => symbol.toUpperCase().includes(s)); 
         
         if (isNameMatch || isSymbolMatch) {
             console.log("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");

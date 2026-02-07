@@ -8,8 +8,8 @@ export const CLAW_SCOUT_CONFIG = {
   officialMintAddress: '', 
   
   // Backup identifiers if CA is not yet known
-  targetNames: ["$MoltScout", "MoltScout"],
-  targetSymbols: ["MOLTSCOUT"], // Strict match for the ticker
+  targetNames: ["Coin"], // TEST MODE
+  targetSymbols: ["COIN"], // TEST MODE
   
   // Official override image (optional)
   image: "/clawseek_logo.jpg",
