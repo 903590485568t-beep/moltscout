@@ -62,14 +62,14 @@ export const usePumpPortal = (searchTerm: string = '') => {
     try {
         const stored = localStorage.getItem('claw_token_data_v9');
         if (stored) {
-            const token = JSON.parse(stored);
-            // Trust local storage for instant render, Supabase will correct if needed
-            setClawToken(token);
-            clawTokenRef.current = token;
-        }
-    } catch (e) {
-        console.error("Failed to load stored token", e);
+        const token = JSON.parse(stored);
+        // Trust local storage for instant render, Supabase will correct if needed
+        setClawToken(token);
+        clawTokenRef.current = token;
     }
+} catch {
+    // console.error("Failed to load stored token", e);
+}
 
     // 2. Check Supabase (The Source of Truth)
     const fetchFromSupabase = async () => {
@@ -151,12 +151,11 @@ export const usePumpPortal = (searchTerm: string = '') => {
         clearInterval(pollInterval);
         supabase.removeChannel(channel);
     };
+}, []); // Empty dependency array -> Run ONCE on mount
 
-  }, []);
-
-  // Save ClawToken to LocalStorage whenever it updates
-  useEffect(() => {
-    if (clawToken) {
+// 4. WebSocket for real-time price updates (Only if we have a token)
+useEffect(() => {
+    if (!clawToken) return;
         // Force the override image if it's not set
         if (CLAW_SCOUT_CONFIG.image && clawToken.imageUrl !== CLAW_SCOUT_CONFIG.image) {
             setClawToken(prev => prev ? ({ ...prev, imageUrl: CLAW_SCOUT_CONFIG.image! }) : null);
@@ -469,7 +468,7 @@ export const usePumpPortal = (searchTerm: string = '') => {
     const huntForClawToken = async () => {
         try {
             // PRIORITY 0: Check Supabase 'official_token' (Global Truth)
-            const { data: official, error } = await supabase
+            const { data: official } = await supabase
                 .from('official_token')
                 .select('*')
                 .order('created_at', { ascending: false })

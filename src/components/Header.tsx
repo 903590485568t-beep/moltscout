@@ -12,7 +12,7 @@ interface HeaderProps {
 }
 
 export const Header = ({ stats, searchTerm, setSearchTerm }: HeaderProps) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // Removed unused state isMenuOpen
   const [dbStatus, setDbStatus] = useState<'checking' | 'connected' | 'error'>('checking');
   const [rowCount, setRowCount] = useState<number | null>(null);
 
