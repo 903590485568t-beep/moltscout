@@ -1,5 +1,7 @@
 import { motion } from 'framer-motion';
-import { Search, Menu, Grab, Activity } from 'lucide-react';
+import { Search, Menu, Grab, Activity, AlertTriangle, Database } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 
 interface HeaderProps {
     stats?: {
@@ -10,8 +12,48 @@ interface HeaderProps {
 }
 
 export const Header = ({ stats, searchTerm, setSearchTerm }: HeaderProps) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [dbStatus, setDbStatus] = useState<'checking' | 'connected' | 'error'>('checking');
+  const [rowCount, setRowCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    const checkConnection = async () => {
+        try {
+            const { data, error } = await supabase.from('official_token').select('id');
+            if (error) {
+                console.error("DB Check Error:", error);
+                setDbStatus('error');
+            } else {
+                setDbStatus('connected');
+                setRowCount(data.length);
+            }
+        } catch (e) {
+            setDbStatus('error');
+        }
+    };
+    checkConnection();
+  }, []);
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-claw-primary/20 bg-[#050505]/90 backdrop-blur-md shadow-[0_4px_20px_rgba(239,68,68,0.1)]">
+      {/* SYSTEM STATUS BANNER (DEBUG) */}
+      {(dbStatus === 'error' || (dbStatus === 'connected' && rowCount === 0)) && (
+          <div className={`w-full py-1 text-[10px] font-mono text-center font-bold flex items-center justify-center gap-2 ${
+              dbStatus === 'error' ? 'bg-red-900/80 text-white' : 'bg-yellow-900/80 text-yellow-200'
+          }`}>
+              {dbStatus === 'error' ? (
+                  <>
+                    <AlertTriangle size={12} />
+                    SYSTEM ALERT: DATABASE DISCONNECTED. CHECK VERCEL ENVIRONMENT VARIABLES.
+                  </>
+              ) : (
+                  <>
+                    <Database size={12} />
+                    SYSTEM: CONNECTED. DATABASE EMPTY. WAITING FOR HUNTER BOT...
+                  </>
+              )}
+          </div>
+      )}
       <div className="container mx-auto flex h-20 items-center justify-between px-4">
         {/* Logo */}
         <div className="flex items-center gap-2">
