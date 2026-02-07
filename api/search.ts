@@ -18,7 +18,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     // Search specifically for the token
-    const targetUrl = `https://frontend-api.pump.fun/coins?offset=0&limit=10&sort=created_timestamp&order=DESC&include_nsfw=true&searchTerm=${term || 'ClawSeek'}`;
+    const targetUrl = `https://frontend-api.pump.fun/coins?offset=0&limit=10&sort=created_timestamp&order=DESC&include_nsfw=true&searchTerm=${term || 'MoltScout'}`;
     
     const response = await fetch(targetUrl, {
         headers: {

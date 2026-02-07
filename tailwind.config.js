@@ -10,8 +10,8 @@ export default {
         claw: {
           bg: '#050505',       // Almost black
           panel: '#0f0f11',    // Dark grey/black panel
-          primary: '#8b5cf6',  // Violet/Purple (The "Seek" color)
-          accent: '#06b6d4',   // Cyan (The "Found" color)
+          primary: '#ef4444',  // Red-500 (The "Seek" color)
+          accent: '#f97316',   // Orange-500 (The "Found" color)
           text: '#f8fafc',     // White/Slate-50
           dim: '#64748b',      // Slate-500
         }

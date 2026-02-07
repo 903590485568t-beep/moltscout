@@ -14,52 +14,44 @@ function App() {
     <div className="min-h-screen bg-claw-bg text-claw-text selection:bg-claw-primary selection:text-white relative overflow-hidden">
       
       {/* Ambient Background Effects */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        {/* Top Violet Gradient */}
-        <div className="absolute top-0 left-0 right-0 h-[50vh] bg-gradient-to-b from-claw-primary/20 via-claw-primary/5 to-transparent opacity-60" />
-        
-        {/* Bottom Turquoise Fire Effect */}
-        <div className="absolute bottom-0 left-0 right-0 h-[40vh] bg-gradient-to-t from-claw-accent/15 via-claw-accent/5 to-transparent opacity-80" />
-        
-        {/* Dynamic Flickering Layer (Bottom) */}
-        <motion.div 
-            className="absolute bottom-0 left-0 right-0 h-[50vh] bg-gradient-to-t from-claw-accent/10 via-transparent to-transparent"
-            animate={{ 
-                opacity: [0.2, 0.5, 0.2],
-                scaleY: [1, 1.1, 1],
-            }}
-            transition={{ 
-                duration: 5, 
-                repeat: Infinity, 
-                ease: "easeInOut" 
-            }}
-            style={{ originY: 1 }}
-        />
+      <div className="fixed inset-0 pointer-events-none z-0 bg-[#050505]">
+        {/* Deep Red Vignette */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#000000_120%)] opacity-80" />
 
-        {/* Floating Bubbles (Smoother) */}
-        {[...Array(15)].map((_, i) => (
+        {/* Top Glow */}
+        <div className="absolute top-0 left-0 right-0 h-[60vh] bg-gradient-to-b from-claw-primary/10 via-transparent to-transparent opacity-40" />
+        
+        {/* Bottom Lava Glow */}
+        <div className="absolute bottom-0 left-0 right-0 h-[50vh] bg-gradient-to-t from-red-900/20 via-claw-primary/5 to-transparent opacity-60" />
+        
+        {/* Rising Embers/Sparks */}
+        {[...Array(30)].map((_, i) => (
            <motion.div
              key={i}
-             className="absolute rounded-full bg-white/5 blur-[1px]"
+             className="absolute rounded-full bg-claw-accent/60 blur-[1px]"
              style={{
-               width: Math.random() * 100 + 20, // Larger, softer bubbles
-               height: Math.random() * 100 + 20,
+               width: Math.random() * 4 + 1, // Tiny sparks
+               height: Math.random() * 4 + 1,
                left: `${Math.random() * 100}%`,
-               top: `${Math.random() * 100 + 100}%`, // Start well below view
+               top: `${Math.random() * 100 + 100}%`,
              }}
              animate={{
-               y: [0, -2500], // Float WAY up (off screen)
-               opacity: [0, 0.3, 0.3, 0], // Stay visible longer, fade only at very end
-               scale: [0.8, 1.2, 0.8] 
+               y: [0, -1500],
+               x: [0, (Math.random() - 0.5) * 200], // Drift left/right
+               opacity: [0, 1, 0],
+               scale: [1, 0]
              }}
              transition={{
-               duration: Math.random() * 40 + 30, // Even slower
+               duration: Math.random() * 10 + 5, // Faster than bubbles
                repeat: Infinity,
                ease: "linear",
-               delay: Math.random() * 20 
+               delay: Math.random() * 10 
              }}
            />
         ))}
+
+        {/* Scanlines Overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(255,0,0,0.02),rgba(255,0,0,0.06))] z-[1] bg-[length:100%_4px,6px_100%] pointer-events-none opacity-20" />
       </div>
 
       <Header stats={stats} searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
@@ -80,11 +72,11 @@ function App() {
                 </h1>
                 <p className="mx-auto lg:mx-0 max-w-2xl text-lg text-claw-dim text-glow-sm">
                 Real-time Pump.fun analysis. We find the alpha before anyone else.
-                Follow the claws.
+                Follow the scout.
                 </p>
             </div>
 
-            {/* Feature Card for $ClawSeek */}
+            {/* Feature Card for $MoltScout */}
             <div className="flex-shrink-0">
                 <FeatureCard token={clawToken} solPrice={solPrice} />
             </div>
@@ -116,7 +108,7 @@ function App() {
 
         {/* Footer */}
         <footer className="mt-20 border-t border-claw-dim/10 py-8 text-center text-sm text-claw-dim">
-          <p>© 2024 $ClawSeek. Data provided by Pump.fun.</p>
+          <p>© 2026 $MoltScout. Data provided by Pump.fun.</p>
         </footer>
       </main>
     </div>

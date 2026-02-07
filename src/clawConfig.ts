@@ -5,11 +5,11 @@
 export const CLAW_SCOUT_CONFIG = {
   // Set this to the real CA once launched, e.g., "7Ey..."
   // If empty, the app will continue to "Hunt" for tokens named "MoltScout" or "$MoltScout"
-  officialMintAddress: 'EwUmj2HVLuYKSBQueuczA55jcoRd34gycixM7BJfpump', 
+  officialMintAddress: '', 
   
   // Backup identifiers if CA is not yet known
-  targetNames: ["MoltScout", "$MoltScout", "Molt Scout"],
-  targetSymbols: ["MOLT", "SCOUT"], // Removed generic "CLAW" to prevent false positives
+  targetNames: ["$MoltScout", "MoltScout"],
+  targetSymbols: ["MOLTSCOUT"], // Strict match for the ticker
   
   // Official override image (optional)
   image: "/clawseek_logo.jpg",

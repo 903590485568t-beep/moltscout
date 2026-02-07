@@ -106,13 +106,20 @@ export const TokenCard = ({ token, solPrice }: TokenCardProps) => {
     <motion.div
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
-      className="group relative flex flex-col gap-4 bg-claw-panel/50 hover:bg-claw-panel border border-claw-dim/10 rounded-xl p-4 transition-colors overflow-hidden w-full shrink-0"
+      className="group relative flex flex-col gap-4 bg-black/80 hover:bg-black border border-claw-primary/30 rounded-sm p-4 transition-colors overflow-hidden w-full shrink-0 shadow-[0_4px_10px_rgba(0,0,0,0.5)]"
+      style={{
+        clipPath: "polygon(0 0, 100% 0, 100% 90%, 95% 100%, 0 100%)" // Tech/Cut corner
+      }}
     >
+      {/* Decorative Tech Lines */}
+      <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-claw-primary/30" />
+      <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-claw-primary/30" />
+
       {/* Top Row: Avatar + Info + Actions */}
       <div className="flex items-start gap-4">
         {/* Avatar - Large */}
-        <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border-2 border-claw-primary/20 bg-claw-bg shadow-md">
-            {loading && <div className="absolute inset-0 bg-claw-panel animate-pulse" />}
+        <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-sm border border-claw-primary/50 bg-black shadow-[0_0_15px_rgba(239,68,68,0.2)]">
+            {loading && <div className="absolute inset-0 bg-claw-primary/10 animate-pulse" />}
             <img 
             src={image} 
             alt={token.symbol} 
@@ -120,18 +127,20 @@ export const TokenCard = ({ token, solPrice }: TokenCardProps) => {
             onError={handleImageError}
             onLoad={handleImageOnLoad}
             />
+            {/* Corner Accent */}
+            <div className="absolute bottom-0 right-0 w-3 h-3 bg-claw-primary/80 clip-path-triangle" />
         </div>
 
         {/* Info & Actions */}
         <div className="flex flex-1 flex-col justify-between min-h-[64px]">
             <div className="flex justify-between items-start gap-2">
                 <div className="flex flex-col min-w-0">
-                    <span className="font-bold text-white text-lg leading-tight truncate" title={token.name}>
+                    <span className="font-bold font-display text-white text-lg leading-tight truncate uppercase tracking-tight" title={token.name}>
                         {token.name}
                     </span>
                     <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-sm font-mono text-claw-primary/90">${token.symbol}</span>
-                        <span className="flex items-center gap-1 bg-claw-bg/50 px-1.5 py-0.5 rounded text-[10px] text-claw-dim border border-claw-dim/10">
+                        <span className="text-sm font-mono font-bold text-claw-primary">${token.symbol}</span>
+                        <span className="flex items-center gap-1 bg-claw-primary/10 px-1.5 py-0.5 rounded-sm text-[10px] text-claw-dim border border-claw-primary/20 uppercase tracking-wide">
                             <Clock size={10} />
                             {formatDistanceToNow(token.created, { addSuffix: true })}
                         </span>
@@ -142,20 +151,20 @@ export const TokenCard = ({ token, solPrice }: TokenCardProps) => {
                 <div className="flex items-center gap-1">
                     <button 
                         onClick={copyToClipboard}
-                        className="p-2 bg-claw-bg hover:bg-claw-primary/20 rounded-lg transition-colors border border-claw-dim/10"
+                        className="p-2 bg-black hover:bg-claw-primary hover:text-black rounded-sm transition-all border border-claw-primary/30 group/btn"
                         title="Copy CA"
                     >
-                        {copied ? <Check size={18} className="text-green-400" /> : <Copy size={18} className="text-claw-dim" />}
+                        {copied ? <Check size={18} className="text-green-400 group-hover/btn:text-black" /> : <Copy size={18} className="text-claw-dim group-hover/btn:text-black" />}
                     </button>
                     
                     <a 
                         href={`https://pump.fun/${token.id}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="p-2 bg-claw-bg hover:bg-claw-primary/20 rounded-lg transition-colors border border-claw-dim/10"
+                        className="p-2 bg-black hover:bg-claw-primary hover:text-black rounded-sm transition-all border border-claw-primary/30 group/btn"
                         title="View on Pump.fun"
                     >
-                        <ExternalLink size={18} className="text-claw-dim" />
+                        <ExternalLink size={18} className="text-claw-dim group-hover/btn:text-black" />
                     </a>
                 </div>
             </div>
@@ -163,37 +172,42 @@ export const TokenCard = ({ token, solPrice }: TokenCardProps) => {
       </div>
 
       {/* Bottom Row: Metrics Grid */}
-      <div className="grid grid-cols-3 gap-3 border-t border-claw-dim/10 pt-3">
+      <div className="grid grid-cols-3 gap-3 border-t border-claw-primary/20 pt-3 relative">
+        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-claw-primary/50 to-transparent" />
+        
         {/* MC */}
         <div className="flex flex-col">
-            <span className="text-[10px] text-claw-dim uppercase tracking-wider font-bold">Mkt Cap</span>
-            <span className="font-mono text-base font-bold text-claw-primary">
+            <span className="text-[10px] text-claw-dim uppercase tracking-widest font-bold">Mkt Cap</span>
+            <span className="font-mono text-base font-bold text-claw-primary shadow-red-glow">
                 ${formatNumber(token.marketCap)}
             </span>
         </div>
 
         {/* Volume */}
-        <div className="flex flex-col border-l border-claw-dim/10 pl-3">
-            <span className="text-[10px] text-claw-dim uppercase tracking-wider font-bold">Volume</span>
+        <div className="flex flex-col border-l border-claw-primary/20 pl-3">
+            <span className="text-[10px] text-claw-dim uppercase tracking-widest font-bold">Volume</span>
             <span className="font-mono text-base font-bold text-white">
                 {`$${formatNumber(token.volume24h * (solPrice || 200))}`}
             </span>
         </div>
 
         {/* Bonding Curve */}
-        <div className="flex flex-col border-l border-claw-dim/10 pl-3">
+        <div className="flex flex-col border-l border-claw-primary/20 pl-3">
              <div className="flex justify-between items-center w-full">
-                <span className="text-[10px] text-claw-dim uppercase tracking-wider font-bold">Curve</span>
-                <span className="text-[10px] font-mono text-white">{curveProgress.toFixed(0)}%</span>
+                <span className="text-[10px] text-claw-dim uppercase tracking-widest font-bold">Curve</span>
+                <span className="text-[10px] font-mono font-bold text-white">{curveProgress.toFixed(0)}%</span>
             </div>
-            <div className="h-2.5 w-full bg-claw-bg rounded-full overflow-hidden mt-1.5 border border-claw-dim/10">
+            <div className="h-2.5 w-full bg-black rounded-sm overflow-hidden mt-1.5 border border-claw-primary/30 relative">
+                {/* Grid background for bar */}
+                <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[size:4px_100%]" />
+                
                 <motion.div 
                     initial={{ width: 0 }}
                     animate={{ width: `${curveProgress}%` }}
                     transition={{ duration: 1, ease: "easeOut" }}
                     className={cn(
-                        "h-full rounded-full shadow-inner",
-                        curveProgress >= 100 ? "bg-green-500 animate-pulse" : "bg-gradient-to-r from-claw-primary to-claw-accent"
+                        "h-full shadow-[0_0_10px_rgba(239,68,68,0.5)]",
+                        curveProgress >= 100 ? "bg-green-500 animate-pulse" : "bg-claw-primary"
                     )}
                 />
             </div>
