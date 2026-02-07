@@ -55,7 +55,7 @@ export const FeatureCard = ({ token, solPrice = 200 }: FeatureCardProps) => {
           <div>
             <h3 className="text-2xl font-black text-white mb-2 tracking-wider uppercase font-display">Scanning...</h3>
             <p className="text-sm text-claw-dim font-mono tracking-widest uppercase text-[10px]">
-              Waiting for Signal: <span className="text-claw-primary font-bold">$MoltScout</span>
+              Waiting for Signal: <span className="text-claw-primary font-bold">COIN</span>
             </p>
           </div>
         </div>
