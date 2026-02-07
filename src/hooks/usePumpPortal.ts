@@ -368,7 +368,7 @@ export const usePumpPortal = (searchTerm: string = '') => {
     const fetchInitialData = async () => {
         try {
             // Priority 0: Fetch HISTORY from Supabase 'stream_feed' (Persistence)
-            const { data: history, error } = await supabase
+            const { data: history } = await supabase
                 .from('stream_feed')
                 .select('*')
                 .order('created_at', { ascending: false })
@@ -378,7 +378,7 @@ export const usePumpPortal = (searchTerm: string = '') => {
             
             if (history && history.length > 0) {
                 // Transform Supabase data to PumpPortal format
-                initialData = history.map(item => ({
+                initialData = history.map((item: any) => ({
                     mint: item.mint,
                     name: item.name,
                     symbol: item.symbol,
@@ -433,8 +433,6 @@ export const usePumpPortal = (searchTerm: string = '') => {
 
                     // Check for ClawSeek
                     const isOfficial = CLAW_SCOUT_CONFIG.officialMintAddress === item.mint;
-                    const isNameMatch = CLAW_SCOUT_CONFIG.targetNames.some(n => item.name.toLowerCase().includes(n.toLowerCase())) || 
-                                        CLAW_SCOUT_CONFIG.targetSymbols.some(s => item.symbol.toLowerCase().includes(s.toLowerCase()));
 
                     // DISABLE AUTOMATIC INITIAL FETCH MATCHING FOR TESTING
                     // Only match if it's the official address. 
@@ -726,7 +724,7 @@ export const usePumpPortal = (searchTerm: string = '') => {
             symbol: data.symbol,
             image_uri: data.uri,
             created_at: new Date().toISOString()
-        }).then(({ error }) => {
+        }).then(({ error }: any) => {
             if (error) console.error("Supabase insert failed:", error);
             else console.log("Supabase insert success!");
         });
