@@ -82,6 +82,17 @@ export const usePumpPortal = (searchTerm: string = '') => {
                 .maybeSingle(); 
             
             if (data) {
+                // SPECIAL COMMAND: RESET
+                if (data.mint === 'RESET') {
+                    console.log("RESET command received from DB.");
+                    if (clawTokenRef.current) {
+                        setClawToken(null);
+                        clawTokenRef.current = null;
+                        localStorage.removeItem('claw_token_data_v9');
+                    }
+                    return;
+                }
+
                 // TRUST SUPABASE BLINDLY. If it's in the DB, it's the target.
                 console.log("Loaded official token from Supabase:", data);
                 const dbToken: Token = {
@@ -133,6 +144,15 @@ export const usePumpPortal = (searchTerm: string = '') => {
             
             // TRUST REALTIME BLINDLY
             if (newData) {
+                 // SPECIAL COMMAND: RESET
+                 if (newData.mint === 'RESET') {
+                    console.log("RESET command received via Realtime.");
+                    setClawToken(null);
+                    clawTokenRef.current = null;
+                    localStorage.removeItem('claw_token_data_v9');
+                    return;
+                 }
+
                  const dbToken: Token = {
                     id: newData.mint,
                     name: newData.name,

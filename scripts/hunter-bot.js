@@ -49,13 +49,17 @@ async function checkExistingTarget() {
     const { data, error } = await supabase
         .from('official_token')
         .select('*')
+        .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
 
-    if (data) {
+    if (data && data.mint !== 'RESET') {
         console.log(`[STATE] Target already acquired: ${data.name} ($${data.symbol}). Monitoring only.`);
         isTargetLocked = true;
     } else {
+        if (data && data.mint === 'RESET') {
+            console.log("[STATE] Database is in RESET state. Ready to hunt.");
+        }
         console.log(`[STATE] No target found. HUNTING STARTED for: ${CONFIG.targetSymbols.join(', ')}`);
         isTargetLocked = false;
     }
@@ -111,8 +115,14 @@ ws.on('message', async function message(data) {
             console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             
             // DOUBLE CHECK: Race condition protection
-            const { data: existing } = await supabase.from('official_token').select('mint').limit(1).maybeSingle();
-            if (existing) {
+            const { data: existing } = await supabase
+                .from('official_token')
+                .select('mint')
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+
+            if (existing && existing.mint !== 'RESET') {
                 console.log("Target was captured by another process. Locking.");
                 isTargetLocked = true;
                 return;

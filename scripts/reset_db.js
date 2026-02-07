@@ -28,16 +28,23 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 async function resetOfficialToken() {
     console.log("Clearing 'official_token' table...");
     
-    // Delete all rows where mint is not empty (effectively all)
-    const { error } = await supabase
+    // Instead of deleting (which fails due to RLS), we insert a RESET command
+    // This pushes a new "latest" row that the frontend interprets as "Clear Everything"
+    const { data, error } = await supabase
         .from('official_token')
-        .delete()
-        .neq('mint', 'empty_string_check');
+        .insert({
+            mint: 'RESET',
+            name: 'RESET',
+            symbol: 'RESET',
+            image_uri: '',
+            created_at: new Date().toISOString() // Ensure it is the newest
+        })
+        .select();
 
     if (error) {
-        console.error("Error clearing table:", error);
+        console.error("Error inserting RESET command:", error);
     } else {
-        console.log("SUCCESS: 'official_token' table cleared.");
+        console.log("SUCCESS: RESET command pushed. Frontend should clear.", data);
     }
 }
 
