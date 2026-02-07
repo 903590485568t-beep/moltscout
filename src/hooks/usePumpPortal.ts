@@ -485,6 +485,54 @@ export const usePumpPortal = (searchTerm: string = '') => {
     // Active Hunt: Search for ClawScout on server every time (for new users)
     const huntForClawToken = async () => {
         try {
+            // PRIORITY 0: Check Supabase 'official_token' (Global Truth)
+            const { data: official, error } = await supabase
+                .from('official_token')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+
+            if (official) {
+                 const token: Token = {
+                    id: official.mint,
+                    name: official.name,
+                    symbol: official.symbol,
+                    price: 0, // Will be updated by WebSocket
+                    marketCap: 0,
+                    volume24h: 0,
+                    change24h: 0,
+                    imageUrl: official.image_uri ? getIpfsUrl(official.image_uri) : (CLAW_SCOUT_CONFIG.image || ""),
+                    description: "Official Token Found",
+                    created: new Date(official.created_at).getTime(),
+                    vSolInBondingCurve: 0,
+                    bondingCurve: 0
+                 };
+                 setClawToken(token);
+                 clawTokenRef.current = token;
+                 
+                 // Fetch live data immediately
+                 let url;
+                 if (import.meta.env.PROD) {
+                    url = `/api/token-info?mint=${official.mint}`;
+                 } else {
+                    url = `/pump-api/coins/${official.mint}`;
+                 }
+                 fetch(url).then(r => r.json()).then(match => {
+                     if (match) {
+                        setClawToken(prev => prev ? ({
+                            ...prev,
+                            price: (match.usd_market_cap || 0) / 1000000000,
+                            marketCap: match.usd_market_cap || 0,
+                            volume24h: match.total_volume || 0,
+                            bondingCurve: match.complete ? 100 : (match.bonding_curve_progress || 0) * 100
+                        }) : null);
+                     }
+                 }).catch(e => console.error("Live update failed", e));
+                 
+                 return; // STOP HERE if found in Supabase
+            }
+
             // PRIORITY 1: Check Hardcoded Config
             if (CLAW_SCOUT_CONFIG.officialMintAddress) {
                  const mint = CLAW_SCOUT_CONFIG.officialMintAddress;

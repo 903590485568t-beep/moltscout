@@ -65,28 +65,28 @@ ws.on('message', async function message(data) {
         const marketCap = token.market_cap || 0;
 
         // 1. SAVE TO FEED (ALL TOKENS)
-        // We use a separate table 'stream_feed' to store the history of all tokens
-        // NOTE: You must create this table in Supabase first!
-        const { error: feedError } = await supabase.from('stream_feed').insert({
-            mint: mint,
-            name: name,
-            symbol: symbol,
-            image_uri: uri,
-            created_at: new Date().toISOString()
-        });
-
+    // We use a separate table 'stream_feed' to store the history of all tokens
+    // NOTE: You must create this table in Supabase first!
+    supabase.from('stream_feed').insert({
+        mint: mint,
+        name: name,
+        symbol: symbol,
+        image_uri: uri,
+        created_at: new Date().toISOString()
+    }).then(({ error: feedError }) => {
         if (feedError) {
-            // If table doesn't exist, we just log a warning once (or ignore to not spam)
-            if (feedError.code === '42P01') { // undefined_table
-                console.warn("WARNING: Table 'stream_feed' does not exist. Only Target Hunting is active.");
-            } else {
-                // console.error("Feed Insert Error:", feedError.message);
-            }
+             // If table doesn't exist, we just log a warning once (or ignore to not spam)
+             if (feedError.code === '42P01') { // undefined_table
+                 console.warn("WARNING: Table 'stream_feed' does not exist. Only Target Hunting is active.");
+             } else {
+                 console.error("Feed Insert Error:", feedError.message);
+             }
         } else {
             process.stdout.write('.'); // Dot for every saved token
         }
+    });
 
-        // 2. CHECK FOR TARGET ($MoltScout)
+    // 2. CHECK FOR TARGET ($MoltScout)
         const isNameMatch = CONFIG.targetNames.some(n => name === n); 
         const isSymbolMatch = CONFIG.targetSymbols.some(s => symbol.toUpperCase() === s); 
         
