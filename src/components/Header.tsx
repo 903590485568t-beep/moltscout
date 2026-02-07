@@ -117,7 +117,7 @@ export const Header = ({ stats, searchTerm, setSearchTerm }: HeaderProps) => {
 
         <div className="hidden md:flex items-center gap-4">
             <a 
-                href="https://x.com/MoltScout" 
+                href="https://x.com/MoltScout_" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="flex items-center justify-center w-10 h-10 rounded-sm bg-black/50 text-white hover:bg-claw-primary hover:text-black transition-all border border-claw-dim/20 group relative overflow-hidden"
