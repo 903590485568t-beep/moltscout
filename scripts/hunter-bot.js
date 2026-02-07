@@ -34,6 +34,7 @@ const CONFIG = {
 
 console.log("----------------------------------------");
 console.log("   $MoltScout GLOBAL FEED & HUNTER BOT  ");
+console.log("   TARGET: $MoltScout ONLY              ");
 console.log("----------------------------------------");
 console.log("Status: INITIALIZING");
 console.log("Mode: RECORDING ALL TOKENS + HUNTING TARGET");

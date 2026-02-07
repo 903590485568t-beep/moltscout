@@ -6,7 +6,7 @@ color 0A
 echo ---------------------------------------------------
 echo   STARTING $MOLTSCOUT HUNTER BOT
 echo ---------------------------------------------------
-echo   Target: COIN
+echo   Target: $MoltScout
 echo   Mode: PERMANENT WATCH
 echo ---------------------------------------------------
 
