@@ -60,23 +60,12 @@ export const usePumpPortal = (searchTerm: string = '') => {
   useEffect(() => {
     // 1. Check LocalStorage
     try {
-        const stored = localStorage.getItem('claw_token_data_v8');
+        const stored = localStorage.getItem('claw_token_data_v9');
         if (stored) {
             const token = JSON.parse(stored);
-            
-            // STRICT VALIDATION: Check if stored token matches current config
-            const isMatch = CLAW_SCOUT_CONFIG.officialMintAddress 
-                ? token.id === CLAW_SCOUT_CONFIG.officialMintAddress
-                : CLAW_SCOUT_CONFIG.targetSymbols.includes(token.symbol.toUpperCase()) || 
-                  CLAW_SCOUT_CONFIG.targetNames.some(n => token.name.toLowerCase().includes(n.toLowerCase()));
-
-            if (!isMatch) {
-                console.log("Stored token does not match strict config. Clearing.");
-                localStorage.removeItem('claw_token_data_v8');
-            } else {
-                 setClawToken(token);
-                 clawTokenRef.current = token;
-            }
+            // Trust local storage for instant render, Supabase will correct if needed
+            setClawToken(token);
+            clawTokenRef.current = token;
         }
     } catch (e) {
         console.error("Failed to load stored token", e);
@@ -93,50 +82,48 @@ export const usePumpPortal = (searchTerm: string = '') => {
                 .maybeSingle(); 
             
             if (data) {
-                // STRICT VALIDATION: Check if DB token matches current config
-                const isMatch = CLAW_SCOUT_CONFIG.officialMintAddress 
-                    ? data.mint === CLAW_SCOUT_CONFIG.officialMintAddress
-                    : CLAW_SCOUT_CONFIG.targetSymbols.includes(data.symbol.toUpperCase()) || 
-                      CLAW_SCOUT_CONFIG.targetNames.some(n => data.name.toLowerCase().includes(n.toLowerCase()));
-
-                if (isMatch) {
-                    console.log("Loaded official token from Supabase:", data);
-                    const dbToken: Token = {
-                        id: data.mint,
-                        name: data.name,
-                        symbol: data.symbol,
-                        imageUrl: data.image_uri || CLAW_SCOUT_CONFIG.image || '',
-                        price: 0,
-                        marketCap: 0,
-                        volume24h: 0,
-                        change24h: 0,
-                        description: '',
-                        created: Date.now(),
-                        vSolInBondingCurve: 0,
-                        bondingCurve: 0
-                    };
-                    
+                // TRUST SUPABASE BLINDLY. If it's in the DB, it's the target.
+                console.log("Loaded official token from Supabase:", data);
+                const dbToken: Token = {
+                    id: data.mint,
+                    name: data.name,
+                    symbol: data.symbol,
+                    imageUrl: data.image_uri || CLAW_SCOUT_CONFIG.image || '',
+                    price: 0,
+                    marketCap: 0,
+                    volume24h: 0,
+                    change24h: 0,
+                    description: '',
+                    created: Date.now(),
+                    vSolInBondingCurve: 0,
+                    bondingCurve: 0
+                };
+                
+                // Only update if changed to avoid re-renders
+                if (!clawTokenRef.current || clawTokenRef.current.id !== dbToken.id) {
                     setClawToken(dbToken);
                     clawTokenRef.current = dbToken;
-                    localStorage.setItem('claw_token_data_v8', JSON.stringify(dbToken));
-                } else {
-                    console.log("Supabase token mismatch (Wrong Token). Clearing local state to resume Hunt.");
-                    setClawToken(null);
-                    clawTokenRef.current = null;
-                    localStorage.removeItem('claw_token_data_v8');
+                    localStorage.setItem('claw_token_data_v9', JSON.stringify(dbToken));
                 }
             } else {
-                console.log("No official token in Supabase. Clearing local state.");
-                setClawToken(null);
-                clawTokenRef.current = null;
-                localStorage.removeItem('claw_token_data_v8');
+                console.log("No official token in Supabase.");
+                // Optional: Only clear if we are sure we want to hunt again.
+                // For now, if DB is empty, we clear.
+                if (clawTokenRef.current) {
+                    setClawToken(null);
+                    clawTokenRef.current = null;
+                    localStorage.removeItem('claw_token_data_v9');
+                }
             }
         } catch (e) {
             console.error("Supabase fetch error:", e);
         }
     };
     // Fetch immediately on mount
-    setTimeout(fetchFromSupabase, 100);
+    fetchFromSupabase();
+    
+    // POLLING FALLBACK: Fetch every 2 seconds to guarantee updates
+    const pollInterval = setInterval(fetchFromSupabase, 2000);
 
     // 3. Subscribe to Realtime Updates
     const channel = supabase.channel('official_token_updates')
@@ -144,13 +131,8 @@ export const usePumpPortal = (searchTerm: string = '') => {
             const newData = payload.new;
             console.log("Supabase Realtime Update:", newData);
             
-            // STRICT VALIDATION
-            const isMatch = CLAW_SCOUT_CONFIG.officialMintAddress 
-                ? newData.mint === CLAW_SCOUT_CONFIG.officialMintAddress
-                : CLAW_SCOUT_CONFIG.targetSymbols.includes(newData.symbol.toUpperCase()) || 
-                  CLAW_SCOUT_CONFIG.targetNames.some(n => newData.name.toLowerCase().includes(n.toLowerCase()));
-
-            if (isMatch) {
+            // TRUST REALTIME BLINDLY
+            if (newData) {
                  const dbToken: Token = {
                     id: newData.mint,
                     name: newData.name,
@@ -160,12 +142,13 @@ export const usePumpPortal = (searchTerm: string = '') => {
                 };
                 setClawToken(dbToken);
                 clawTokenRef.current = dbToken;
-                localStorage.setItem('claw_token_data_v8', JSON.stringify(dbToken));
+                localStorage.setItem('claw_token_data_v9', JSON.stringify(dbToken));
             }
         })
         .subscribe();
 
     return () => {
+        clearInterval(pollInterval);
         supabase.removeChannel(channel);
     };
 
@@ -179,7 +162,7 @@ export const usePumpPortal = (searchTerm: string = '') => {
             setClawToken(prev => prev ? ({ ...prev, imageUrl: CLAW_SCOUT_CONFIG.image! }) : null);
             return;
         }
-        localStorage.setItem('claw_token_data_v8', JSON.stringify(clawToken));
+        localStorage.setItem('claw_token_data_v9', JSON.stringify(clawToken));
     }
   }, [clawToken]);
 
