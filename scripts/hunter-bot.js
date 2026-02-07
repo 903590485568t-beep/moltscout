@@ -27,14 +27,14 @@ if (!SUPABASE_URL || !SUPABASE_KEY) {
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const CONFIG = {
-    targetNames: ["MoltScout"],
-    targetSymbols: ["MoltScout"],
+    targetNames: ["Moltseek"],
+    targetSymbols: ["Moltseek"],
     officialMintAddress: "" 
 };
 
 console.log("----------------------------------------");
-console.log("   $MoltScout GLOBAL FEED & HUNTER BOT  ");
-console.log("   TARGET: $MoltScout ONLY              ");
+console.log("   $Moltseek GLOBAL FEED & HUNTER BOT  ");
+console.log("   TARGET: $Moltseek ONLY              ");
 console.log("----------------------------------------");
 console.log("Status: INITIALIZING");
 console.log("Mode: RECORDING ALL TOKENS + HUNTING TARGET");

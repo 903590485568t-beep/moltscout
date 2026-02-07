@@ -76,7 +76,7 @@ function App() {
                 </p>
             </div>
 
-            {/* Feature Card for $MoltScout */}
+            {/* Feature Card for $Moltseek */}
             <div className="flex-shrink-0">
                 <FeatureCard token={clawToken} solPrice={solPrice} />
             </div>

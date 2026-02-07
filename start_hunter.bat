@@ -1,12 +1,12 @@
 @echo off
-title $MoltScout Hunter Bot
+title $Moltseek Hunter Bot
 color 0A
 
 :start
 echo ---------------------------------------------------
-echo   STARTING $MOLTSCOUT HUNTER BOT
+echo   STARTING $MOLTSEEK HUNTER BOT
 echo ---------------------------------------------------
-echo   Target: $MoltScout
+echo   Target: $Moltseek
 echo   Mode: PERMANENT WATCH
 echo ---------------------------------------------------
 
