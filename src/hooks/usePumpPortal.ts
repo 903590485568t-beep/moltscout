@@ -60,7 +60,7 @@ export const usePumpPortal = (searchTerm: string = '') => {
   useEffect(() => {
     // 1. Check LocalStorage
     try {
-        const stored = localStorage.getItem('claw_token_data_v7');
+        const stored = localStorage.getItem('claw_token_data_v8');
         if (stored) {
             const token = JSON.parse(stored);
             
@@ -68,11 +68,11 @@ export const usePumpPortal = (searchTerm: string = '') => {
             const isMatch = CLAW_SCOUT_CONFIG.officialMintAddress 
                 ? token.id === CLAW_SCOUT_CONFIG.officialMintAddress
                 : CLAW_SCOUT_CONFIG.targetSymbols.includes(token.symbol.toUpperCase()) || 
-                  CLAW_SCOUT_CONFIG.targetNames.some(n => token.name.toLowerCase() === n.toLowerCase());
+                  CLAW_SCOUT_CONFIG.targetNames.some(n => token.name.toLowerCase().includes(n.toLowerCase()));
 
             if (!isMatch) {
                 console.log("Stored token does not match strict config. Clearing.");
-                localStorage.removeItem('claw_token_data_v7');
+                localStorage.removeItem('claw_token_data_v8');
             } else {
                  setClawToken(token);
                  clawTokenRef.current = token;
@@ -97,7 +97,7 @@ export const usePumpPortal = (searchTerm: string = '') => {
                 const isMatch = CLAW_SCOUT_CONFIG.officialMintAddress 
                     ? data.mint === CLAW_SCOUT_CONFIG.officialMintAddress
                     : CLAW_SCOUT_CONFIG.targetSymbols.includes(data.symbol.toUpperCase()) || 
-                      CLAW_SCOUT_CONFIG.targetNames.some(n => data.name.toLowerCase() === n.toLowerCase());
+                      CLAW_SCOUT_CONFIG.targetNames.some(n => data.name.toLowerCase().includes(n.toLowerCase()));
 
                 if (isMatch) {
                     console.log("Loaded official token from Supabase:", data);
@@ -118,18 +118,18 @@ export const usePumpPortal = (searchTerm: string = '') => {
                     
                     setClawToken(dbToken);
                     clawTokenRef.current = dbToken;
-                    localStorage.setItem('claw_token_data_v7', JSON.stringify(dbToken));
+                    localStorage.setItem('claw_token_data_v8', JSON.stringify(dbToken));
                 } else {
                     console.log("Supabase token mismatch (Wrong Token). Clearing local state to resume Hunt.");
                     setClawToken(null);
                     clawTokenRef.current = null;
-                    localStorage.removeItem('claw_token_data_v7');
+                    localStorage.removeItem('claw_token_data_v8');
                 }
             } else {
                 console.log("No official token in Supabase. Clearing local state.");
                 setClawToken(null);
                 clawTokenRef.current = null;
-                localStorage.removeItem('claw_token_data_v7');
+                localStorage.removeItem('claw_token_data_v8');
             }
         } catch (e) {
             console.error("Supabase fetch error:", e);
@@ -148,7 +148,7 @@ export const usePumpPortal = (searchTerm: string = '') => {
             const isMatch = CLAW_SCOUT_CONFIG.officialMintAddress 
                 ? newData.mint === CLAW_SCOUT_CONFIG.officialMintAddress
                 : CLAW_SCOUT_CONFIG.targetSymbols.includes(newData.symbol.toUpperCase()) || 
-                  CLAW_SCOUT_CONFIG.targetNames.some(n => newData.name.toLowerCase() === n.toLowerCase());
+                  CLAW_SCOUT_CONFIG.targetNames.some(n => newData.name.toLowerCase().includes(n.toLowerCase()));
 
             if (isMatch) {
                  const dbToken: Token = {
@@ -160,7 +160,7 @@ export const usePumpPortal = (searchTerm: string = '') => {
                 };
                 setClawToken(dbToken);
                 clawTokenRef.current = dbToken;
-                localStorage.setItem('claw_token_data_v7', JSON.stringify(dbToken));
+                localStorage.setItem('claw_token_data_v8', JSON.stringify(dbToken));
             }
         })
         .subscribe();
@@ -179,7 +179,7 @@ export const usePumpPortal = (searchTerm: string = '') => {
             setClawToken(prev => prev ? ({ ...prev, imageUrl: CLAW_SCOUT_CONFIG.image! }) : null);
             return;
         }
-        localStorage.setItem('claw_token_data_v7', JSON.stringify(clawToken));
+        localStorage.setItem('claw_token_data_v8', JSON.stringify(clawToken));
     }
   }, [clawToken]);
 
