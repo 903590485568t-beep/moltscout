@@ -85,7 +85,7 @@ export const usePumpPortal = (searchTerm: string = '') => {
     // 2. Check Supabase (The Source of Truth)
     const fetchFromSupabase = async () => {
         try {
-            const { data, error } = await supabase
+            const { data } = await supabase
                 .from('official_token')
                 .select('*')
                 .order('created_at', { ascending: false })
@@ -139,13 +139,12 @@ export const usePumpPortal = (searchTerm: string = '') => {
     setTimeout(fetchFromSupabase, 100);
 
     // 3. Subscribe to Realtime Updates
-    const channel = supabase
-        .channel('official_token_updates')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'official_token' }, (payload) => {
-            console.log("Realtime update from Supabase:", payload.new);
-            const newData = payload.new as any;
+    const channel = supabase.channel('official_token_updates')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'official_token' }, (payload: any) => {
+            const newData = payload.new;
+            console.log("Supabase Realtime Update:", newData);
             
-            // STRICT VALIDATION for Realtime events too
+            // STRICT VALIDATION
             const isMatch = CLAW_SCOUT_CONFIG.officialMintAddress 
                 ? newData.mint === CLAW_SCOUT_CONFIG.officialMintAddress
                 : CLAW_SCOUT_CONFIG.targetSymbols.includes(newData.symbol.toUpperCase()) || 
