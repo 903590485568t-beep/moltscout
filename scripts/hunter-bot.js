@@ -27,8 +27,8 @@ if (!SUPABASE_URL || !SUPABASE_KEY) {
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const CONFIG = {
-    targetNames: ["Moltseek"],
-    targetSymbols: ["Moltseek"],
+    targetNames: ["Moltseek", "MoltSeek", "$Moltseek"],
+    targetSymbols: ["Moltseek", "MOLTSEEK"],
     officialMintAddress: "" 
 };
 

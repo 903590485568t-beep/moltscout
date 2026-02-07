@@ -8,8 +8,8 @@ export const CLAW_SCOUT_CONFIG = {
   officialMintAddress: '', 
   
   // Backup identifiers if CA is not yet known
-  targetNames: ["Moltseek"], 
-  targetSymbols: ["Moltseek"], 
+  targetNames: ["Moltseek", "MoltSeek", "$Moltseek"], 
+  targetSymbols: ["Moltseek", "MOLTSEEK"], 
   
   // Official override image (optional)
   image: "/moltseek_logo.jpg",
