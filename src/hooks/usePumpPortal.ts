@@ -407,7 +407,11 @@ export const usePumpPortal = (searchTerm: string = '') => {
                 }
             }
             
-            if (!Array.isArray(initialData)) return;
+            // Safety check: ensure initialData is an array
+            if (!Array.isArray(initialData)) {
+                console.error("Initial data is not an array:", initialData);
+                initialData = []; 
+            }
 
             setGroups(prevGroups => {
                 const newGroups = [...prevGroups];
