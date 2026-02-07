@@ -12,7 +12,7 @@ export const CLAW_SCOUT_CONFIG = {
   targetSymbols: ["Moltseek"], 
   
   // Official override image (optional)
-  image: "/clawseek_logo.jpg",
+  image: "/moltseek_logo.jpg",
   
   // Social links to pre-fill or override
   socials: {
