@@ -711,9 +711,39 @@ export const usePumpPortal = (searchTerm: string = '') => {
         // Polling interval for stats updates (every 2 seconds)
         const interval = setInterval(verifyStoredToken, 2000);
 
+        // REALTIME: Listen for 'official_token' INSERT events from Supabase
+        const channel = supabase.channel('official_token_updates')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'official_token' }, (payload: any) => {
+                const newData = payload.new;
+                console.log("🔥 REALTIME: Official Token Detected!", newData);
+                
+                // Immediately update state
+                const token: Token = {
+                    id: newData.mint,
+                    name: newData.name,
+                    symbol: newData.symbol,
+                    price: 0,
+                    marketCap: 0,
+                    volume24h: 0,
+                    change24h: 0,
+                    imageUrl: newData.image_uri ? getIpfsUrl(newData.image_uri) : (CLAW_SCOUT_CONFIG.image || ""),
+                    description: "Official Token Found",
+                    created: new Date(newData.created_at).getTime(),
+                    vSolInBondingCurve: 0,
+                    bondingCurve: 0
+                 };
+                 setClawToken(token);
+                 clawTokenRef.current = token;
+                 
+                 // Trigger a verify to fetch live stats
+                 verifyStoredToken();
+            })
+            .subscribe();
+
         return () => {
             clearTimeout(timer);
             clearInterval(interval);
+            supabase.removeChannel(channel);
         };
     }, []);
 
