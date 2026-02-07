@@ -27,8 +27,8 @@ if (!SUPABASE_URL || !SUPABASE_KEY) {
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const CONFIG = {
-    targetNames: ["Coin"],
-    targetSymbols: ["COIN"],
+    targetNames: ["MoltScout"],
+    targetSymbols: ["MoltScout"],
     officialMintAddress: "" 
 };
 
