@@ -140,7 +140,7 @@ export const usePumpPortal = (searchTerm: string = '') => {
 
     // 3. Subscribe to Realtime Updates
     const channel = supabase.channel('official_token_updates')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'official_token' }, (payload: any) => {
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'official_token' }, (payload: any) => {
             const newData = payload.new;
             console.log("Supabase Realtime Update:", newData);
             
@@ -395,7 +395,7 @@ export const usePumpPortal = (searchTerm: string = '') => {
                 let url;
                 // Use local API proxy in production (Saved on Host logic)
                 if (import.meta.env.PROD) {
-                    url = '/api/tokens';
+                    url = '/api/coins?offset=0&limit=50&sort=created_timestamp&order=DESC&include_nsfw=true';
                 } else {
                     // Use local proxy in dev
                     url = '/pump-api/coins?offset=0&limit=50&sort=created_timestamp&order=DESC&include_nsfw=true';
