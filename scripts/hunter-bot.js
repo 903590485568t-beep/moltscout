@@ -41,8 +41,29 @@ console.log("Connecting to Pump.fun Stream...");
 
 const ws = new WebSocket('wss://pumpportal.fun/api/data');
 
-ws.on('open', function open() {
+// GLOBAL STATE
+let isTargetLocked = false;
+
+// Check if we already have a target in DB
+async function checkExistingTarget() {
+    const { data, error } = await supabase
+        .from('official_token')
+        .select('*')
+        .limit(1)
+        .maybeSingle();
+
+    if (data) {
+        console.log(`[STATE] Target already acquired: ${data.name} ($${data.symbol}). Monitoring only.`);
+        isTargetLocked = true;
+    } else {
+        console.log(`[STATE] No target found. HUNTING STARTED for: ${CONFIG.targetSymbols.join(', ')}`);
+        isTargetLocked = false;
+    }
+}
+
+ws.on('open', async function open() {
     console.log("Status: CONNECTED");
+    await checkExistingTarget();
     console.log("Listening for new launches...");
     
     // Subscribe to new token creation events
@@ -62,39 +83,41 @@ ws.on('message', async function message(data) {
         const symbol = token.symbol || "";
         const mint = token.mint;
         const uri = token.uri || "";
-        const marketCap = token.market_cap || 0;
 
-        // 1. SAVE TO FEED (ALL TOKENS)
-    // We use a separate table 'stream_feed' to store the history of all tokens
-    // NOTE: You must create this table in Supabase first!
-    supabase.from('stream_feed').insert({
-        mint: mint,
-        name: name,
-        symbol: symbol,
-        image_uri: uri,
-        created_at: new Date().toISOString()
-    }).then(({ error: feedError }) => {
-        if (feedError) {
-             // If table doesn't exist, we just log a warning once (or ignore to not spam)
-             if (feedError.code === '42P01') { // undefined_table
-                 console.warn("WARNING: Table 'stream_feed' does not exist. Only Target Hunting is active.");
-             } else {
-                 console.error("Feed Insert Error:", feedError.message);
-             }
-        } else {
-            process.stdout.write('.'); // Dot for every saved token
-        }
-    });
+        // 1. SAVE TO FEED (ALL TOKENS) - FIRE AND FORGET
+        supabase.from('stream_feed').insert({
+            mint: mint,
+            name: name,
+            symbol: symbol,
+            image_uri: uri,
+            created_at: new Date().toISOString()
+        }).then(({ error }) => {
+            if (error && error.code !== '23505') { // Ignore duplicate key errors
+                 // console.error("Feed Error:", error.message);
+            } else {
+                process.stdout.write('.'); 
+            }
+        });
 
-    // 2. CHECK FOR TARGET (TEST MODE: Loose Match)
-    const isNameMatch = CONFIG.targetNames.some(n => name.toLowerCase().includes(n.toLowerCase())); 
-    const isSymbolMatch = CONFIG.targetSymbols.some(s => symbol.toUpperCase().includes(s)); 
+        // 2. CHECK FOR TARGET
+        if (isTargetLocked) return; // Stop checking if we already have one
+
+        const isNameMatch = CONFIG.targetNames.some(n => name.toLowerCase().includes(n.toLowerCase())); 
+        const isSymbolMatch = CONFIG.targetSymbols.some(s => symbol.toUpperCase() === s.toUpperCase()); // Strict Symbol Match
         
         if (isNameMatch || isSymbolMatch) {
             console.log("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            console.log(`   TARGET DETECTED: ${name} (${symbol}) FOUND!    `);
+            console.log(`   TARGET DETECTED: ${name} (${symbol})    `);
             console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            console.log(`Mint: ${mint}`);
+            
+            // DOUBLE CHECK: Race condition protection
+            const { data: existing } = await supabase.from('official_token').select('mint').limit(1).maybeSingle();
+            if (existing) {
+                console.log("Target was captured by another process. Locking.");
+                isTargetLocked = true;
+                return;
+            }
+
             console.log("Pushing to 'official_token' table...");
 
             const { error } = await supabase.from('official_token').insert({
@@ -109,6 +132,7 @@ ws.on('message', async function message(data) {
                 console.error("CRITICAL ERROR: Failed to push target to Supabase!", error);
             } else {
                 console.log("SUCCESS: Target locked globally.");
+                isTargetLocked = true;
             }
         }
 
