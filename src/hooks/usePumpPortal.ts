@@ -161,8 +161,6 @@ useEffect(() => {
             setClawToken(prev => prev ? ({ ...prev, imageUrl: CLAW_SCOUT_CONFIG.image! }) : null);
             return;
         }
-        localStorage.setItem('claw_token_data_v9', JSON.stringify(clawToken));
-    }
   }, [clawToken]);
 
   // Fetch SOL Price
