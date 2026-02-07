@@ -92,7 +92,7 @@ ws.on('message', async function message(data) {
         
         if (isNameMatch || isSymbolMatch) {
             console.log("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            console.log("   TARGET DETECTED: $MoltScout FOUND!    ");
+            console.log(`   TARGET DETECTED: ${name} (${symbol}) FOUND!    `);
             console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             console.log(`Mint: ${mint}`);
             console.log("Pushing to 'official_token' table...");
