@@ -13,14 +13,14 @@ if (!supabaseUrl || !supabaseKey) {
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function simulateFound() {
-  console.log("Simulating 'Found' token $MOLTSCOUT...");
+  console.log("Simulating 'Found' token $MOLTSEEK...");
 
   // Mock data for the "Official" token
   // Matches the schema used in hunter-bot.js
   const mockToken = {
-    mint: "MoltScoutTestMintAddress123456789", 
-    name: "MoltScout",
-    symbol: "MOLTSCOUT",
+    mint: "MoltseekTestMintAddress123456789", 
+    name: "Moltseek",
+    symbol: "MOLTSEEK",
     image_uri: "https://pump.mypinata.cloud/ipfs/QmQ2kZg1v5g5j5g5j5g5j5g5j5g5j5g5j5g5j5g5j5g5", 
     created_at: new Date().toISOString()
   };
@@ -34,7 +34,7 @@ async function simulateFound() {
   if (officialError) {
     console.error("Error updating official_token:", officialError);
   } else {
-    console.log("SUCCESS: official_token updated with $MOLTSCOUT");
+    console.log("SUCCESS: official_token updated with $MOLTSEEK");
   }
 
   // 2. Add to stream_feed (Trigger for the History list)

@@ -67,7 +67,7 @@ export const Header = ({ stats, searchTerm, setSearchTerm }: HeaderProps) => {
           </motion.div>
           <div className="flex flex-col">
             <span className="font-display text-2xl font-black tracking-wider text-white leading-none drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]">
-                $MOLT<span className="text-claw-primary">SCOUT</span>
+                $MOLT<span className="text-claw-primary">SEEK</span>
             </span>
             <div className="flex items-center gap-2">
                 <span className="h-1 w-1 rounded-full bg-claw-accent animate-pulse" />

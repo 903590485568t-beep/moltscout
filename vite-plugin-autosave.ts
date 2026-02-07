@@ -33,7 +33,7 @@ export const autoSavePlugin = (): Plugin => {
                       
                       // Execute Git commands
                       // git add . -> git commit -> git push
-                      exec('git add src/clawConfig.ts && git commit -m "Auto-detected MoltScout token: ' + mint + '" && git push', (err, stdout, stderr) => {
+                      exec('git add src/clawConfig.ts && git commit -m "Auto-detected Moltseek token: ' + mint + '" && git push', (err, stdout, stderr) => {
                           if (err) {
                               console.error('[AutoSave] Git command failed:', stderr);
                               // We still return 200 because the file was updated locally
